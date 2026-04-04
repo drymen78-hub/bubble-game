@@ -1,0 +1,27 @@
+{
+  "background_color": "#6a11cb",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "버블팝 그림책",
+  "orientation": "portrait",
+  "scope": "/bubble-game/",
+  "short_name": "버블팝",
+  "start_url": "/bubble-game/",
+  "theme_color": "#6a11cb",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;rect width='100' height='100' fill='%236a11cb'/&gt;&lt;text y='.9em' x='50%25' text-anchor='middle' font-size='80'&gt;🫧&lt;/text&gt;&lt;/svg&gt;",
+      "isSquare": false,
+      "isPng": false,
+      "isWebp": false,
+      "isJpg": false,
+      "width": 0,
+      "is512x512": false,
+      "is256x256": false,
+      "is192x192": false
+    }
+  ],
+  "id": "com.bubblepop.picturebook",
+  "description": "버블을 터트리며 5개 언어를 배우는 어린이 학습 게임",
+  "lang": "ko"
+}
