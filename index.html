@@ -9,7 +9,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="버블팝">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%236a11cb'/><text y='.9em' x='50%' text-anchor='middle' font-size='80'>🫧</text></svg>">
-<link rel="manifest" href="/bubble-game/manifest.json">
+<link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22%EB%B2%84%EB%B8%94%ED%8C%9D%20%EA%B7%B8%EB%A6%BC%EC%B1%85%22%2C%22short_name%22%3A%22%EB%B2%84%EB%B8%94%ED%8C%9D%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%236a11cb%22%2C%22theme_color%22%3A%22%236a11cb%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20100%20100'%3E%3Ctext%20y%3D'.9em'%20font-size%3D'90'%3E%F0%9F%A7%A7%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+
 <title>버블팝 그림책</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@700;900&display=swap');
@@ -75,11 +76,9 @@ body{
   font-size:0.8rem; text-align:center; line-height:1.4; box-shadow: 0 4px 0 rgba(0,0,0,0.1); transition:all 0.15s; opacity:0.4;
 }
 .grp-btn.on{opacity:1;}
-.grp-btn.locked{opacity:0.6; background:rgba(0,0,0,0.15);}
-.grp-btn:hover:not(.locked):not(.sel){ transform:translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,0.15); background:rgba(255,255,255,0.2); }
-.grp-btn:active:not(.locked):not(.sel){ transform:translateY(4px); box-shadow: none; }
+.grp-btn:hover:not(.sel){ transform:translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,0.15); background:rgba(255,255,255,0.2); }
+.grp-btn:active:not(.sel){ transform:translateY(4px); box-shadow: none; }
 .grp-btn.sel{ border-color:#fff; background:linear-gradient(135deg, #74b9ff, #0984e3); color:#fff; font-weight:bold; box-shadow: 0 0 15px rgba(116,185,255,0.6); transform:scale(1.05); }
-.grp-lock{ position:absolute; top:-6px; right:-6px; background:#ff7675; border:2px solid #fff; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; box-shadow:0 3px 6px rgba(0,0,0,0.3); z-index:2; }
 .grp-icon{font-size:1.4rem;display:block;margin-bottom:2px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));}
 
 .lbl{font-size:0.75rem;color:#f1f2f6;margin-bottom:6px;font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,0.3);}
@@ -121,7 +120,6 @@ body{
 .misc-btn:active{transform:translateY(4px); box-shadow:none;}
 #bgm-btn{background:linear-gradient(135deg,#a29bfe,#6c5ce7);}
 #reset-btn{background:linear-gradient(135deg,#ff7675,#d63031);}
-#test-mode-btn{width:100%; margin-top:10px; background:linear-gradient(135deg,#f093fb,#f5576c);}
 
 /* ══ 게임 화면 ══ */
 #game-screen{display:none;flex-direction:column;align-items:center;width:100%;max-width:350px;gap:0;}
@@ -220,15 +218,6 @@ body{
 #ov-next{ min-height: 56px; display: flex; align-items: center; justify-content: center; width:100%; padding:15px; background:linear-gradient(135deg,#00b894,#00cec9); border:none; border-radius:20px; color:#fff; font-size:1.1rem; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 6px 0 #019074, 0 10px 20px rgba(0,184,148,0.4); transition:all 0.1s; }
 #ov-next:active{transform:translateY(6px); box-shadow:none;}
 
-#premium-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:900;align-items:center;justify-content:center;padding:20px;}
-#premium-modal.on{display:flex;animation:zin 0.3s ease;}
-.pm-box{background:linear-gradient(135deg,#2d3436,#1e272e);border:3px solid #fdcb6e;border-radius:24px;padding:28px;text-align:center;width:100%;max-width:320px;box-shadow:0 0 50px rgba(253,203,110,0.5);}
-.pm-icon{font-size:3.5rem;margin-bottom:12px;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.4));}
-.pm-title{font-size:1.3rem;color:#fdcb6e;font-weight:900;margin-bottom:12px;text-shadow:0 2px 4px rgba(0,0,0,0.5);}
-.pm-desc{font-size:0.95rem;color:#dfe6e9;margin-bottom:24px;line-height:1.6;font-weight:bold;}
-.pm-btn{ min-height: 52px; display: inline-flex; align-items: center; justify-content: center; padding:12px 24px;background:linear-gradient(135deg,#fdcb6e,#e1b12c);border:none;border-radius:18px;color:#2d3436;font-weight:900;font-size:1rem;cursor:pointer;box-shadow:0 5px 0 #b8860b;transition:transform 0.1s;}
-.pm-btn:active{transform:translateY(5px); box-shadow:none;}
-
 #lvup{ display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%); background:linear-gradient(135deg,#f093fb,#f5576c);border-radius:30px;padding:30px 40px; text-align:center;z-index:999;box-shadow:0 20px 60px rgba(245,87,108,0.6);border:4px solid #fff; }
 #lvup.on{display:block;animation:zinPopup 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
 .lu-em{font-size:4.5rem;filter:drop-shadow(0 5px 10px rgba(0,0,0,0.4));}
@@ -274,11 +263,6 @@ body{
   .tbtn { font-size: 1rem; padding: 12px 20px; }
 }
 </style>
-  <script>
-if('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/bubble-game/sw.js');
-}
-</script>
 </head>
 <body>
 
@@ -299,6 +283,7 @@ if('serviceWorker' in navigator) {
   <div class="card"><h3>① 나는 몇 살인가요?</h3><div class="age-grid" id="age-grid"></div></div>
 
   <div class="card"><h3>② 어떤 단어를 배울까요?</h3><div class="grp-grid" id="grp-grid"></div></div>
+  
   <div class="card">
     <h3>③ 언어 설정</h3>
     <div class="lbl">🏠 모국어</div>
@@ -321,7 +306,6 @@ if('serviceWorker' in navigator) {
       <button class="misc-btn" id="bgm-btn" onclick="toggleBgm()">🎵 BGM: 꺼짐</button>
       <button class="misc-btn" id="reset-btn" onclick="resetProgress()">🗑️ 진도 초기화</button>
     </div>
-    <button class="misc-btn" id="test-mode-btn" onclick="toggleTestMode()">🔓 테스트 모드: OFF</button>
   </div>
 
   <button id="start-btn" onclick="startGame()">🎮 게임 시작!</button>
@@ -395,16 +379,6 @@ if('serviceWorker' in navigator) {
   </div>
 </div>
 
-<!-- 프리미엄 팝업 -->
-<div id="premium-modal">
-  <div class="pm-box">
-    <div class="pm-icon">🔒</div>
-    <div class="pm-title"><span id="pm-grp-name"></span> 그룹은<br>프리미엄 전용이에요!</div>
-    <div class="pm-desc">더 많은 단어와 재미있는 테마를<br>프리미엄 버전에서 만나보세요.</div>
-    <button class="pm-btn" onclick="hidePremiumModal()">확인했어요</button>
-  </div>
-</div>
-
 <!-- 레벨업 팝업 -->
 <div id="lvup"><div class="lu-em" id="lu-em"></div><div class="lu-t">레벨 업! 🎉</div><div class="lu-n" id="lu-n"></div></div>
 
@@ -473,8 +447,6 @@ const AGES=[
   {id:'tween',icon:'🧑',lbl:'10~12세',desc:'실력을 키워요!',C:6,R:6,T:45,rec:['직업','나라','스포츠']},
   {id:'teen',icon:'👨',lbl:'13세+',desc:'도전! 고급단어',C:6,R:6,T:35,rec:['수도','K컬처']},
 ];
-const FREE_GROUPS = ['동물', '과일', '색깔'];
-let isTestMode = false;
 
 const GRPS={
   '동물':[{e:'🐶',w:{ko:'강아지',en:'Dog',ja:'犬',zh:'狗',es:'Perro'}},{e:'🐱',w:{ko:'고양이',en:'Cat',ja:'猫',zh:'猫',es:'Gato'}},{e:'🐰',w:{ko:'토끼',en:'Rabbit',ja:'ウサギ',zh:'兔子',es:'Conejo'}},{e:'🦊',w:{ko:'여우',en:'Fox',ja:'キツネ',zh:'狐狸',es:'Zorro'}},{e:'🐻',w:{ko:'곰',en:'Bear',ja:'クマ',zh:'熊',es:'Oso'}},{e:'🐘',w:{ko:'코끼리',en:'Elephant',ja:'ゾウ',zh:'大象',es:'Elefante'}},{e:'🦁',w:{ko:'사자',en:'Lion',ja:'ライオン',zh:'狮子',es:'León'}},{e:'🐯',w:{ko:'호랑이',en:'Tiger',ja:'トラ',zh:'老虎',es:'Tigre'}},{e:'🐒',w:{ko:'원숭이',en:'Monkey',ja:'サル',zh:'猴子',es:'Mono'}},{e:'🦒',w:{ko:'기린',en:'Giraffe',ja:'キリン',zh:'长颈鹿',es:'Jirafa'}},{e:'🦛',w:{ko:'하마',en:'Hippo',ja:'カバ',zh:'河马',es:'Hipopótamo'}},{e:'🦏',w:{ko:'코뿔소',en:'Rhino',ja:'サイ',zh:'犀牛',es:'Rinoceronte'}},{e:'🐷',w:{ko:'돼지',en:'Pig',ja:'豚',zh:'猪',es:'Cerdo'}},{e:'🐮',w:{ko:'소',en:'Cow',ja:'牛',zh:'牛',es:'Vaca'}},{e:'🐴',w:{ko:'말',en:'Horse',ja:'馬',zh:'马',es:'Caballo'}}],
@@ -507,20 +479,12 @@ let selAge=null,selGrp=null,natLang='ko',lrnLang='en';
 let C=6,R=6,TL=60,TOT=36,stages=[],cur=0,popped=0,done=false;
 let score=0,xp=0,lv=1,tmrId=null,tLeft=0,repId=null;
 
-/* 진도 관리 (API 키 불러오는 부분 제거) */
+/* 진도 관리 */
 function loadProgress(){
   const s=localStorage.getItem('bubble_save');if(s){const d=JSON.parse(s);score=d.score||0;xp=d.xp||0;lv=d.lv||1;}
 }
 function saveProgress(){localStorage.setItem('bubble_save',JSON.stringify({score,xp,lv}));}
 function resetProgress(){if(confirm('정말 모든 학습 진도를 초기화할까요?')){localStorage.removeItem('bubble_save');location.reload();}}
-
-function toggleTestMode() {
-  isTestMode = !isTestMode;
-  const btn = document.getElementById('test-mode-btn');
-  btn.textContent = isTestMode ? '🔓 테스트 모드: ON' : '🔓 테스트 모드: OFF';
-  btn.style.background = isTestMode ? 'linear-gradient(135deg, #00b894, #00cec9)' : 'linear-gradient(135deg, #f093fb, #f5576c)';
-  buildSetup();
-}
 
 /* UI 렌더링 */
 function buildSetup(){
@@ -536,24 +500,20 @@ function buildSetup(){
   
   Object.keys(GRPS).forEach(g=>{
     const b=document.createElement('button');
-    const isFree = FREE_GROUPS.includes(g) || isTestMode;
     const rec=selAge&&AGES.find(a=>a.id===selAge)?.rec.includes(g);
     
     const gIcon = ic[g] || '📁';
     const gName = g;
 
-    b.className='grp-btn'+(selAge?' on':'')+(selGrp===g?' sel':'')+(isFree?'':' locked');
+    // 모든 그룹 잠금 해제
+    b.className='grp-btn'+(selAge?' on':'')+(selGrp===g?' sel':'');
     b.innerHTML=`<span class="grp-icon">${gIcon}</span>${gName}${rec?'<br><span style="font-size:0.65rem;color:#ffeaa7;font-weight:bold;">★추천</span>':''}`;
-    if(!isFree) b.innerHTML += `<div class="grp-lock">🔒</div>`;
     
-    b.onclick=()=>{ if(!isFree){ showPremiumModal(g); return; } selGrp=g; buildSetup(); };
+    b.onclick=()=>{ selGrp=g; buildSetup(); };
     gg.appendChild(b);
   });
   document.getElementById('start-btn').classList.toggle('on',!!(selAge&&selGrp)); buildSoundUI();
 }
-
-function showPremiumModal(g){document.getElementById('pm-grp-name').textContent=g;document.getElementById('premium-modal').classList.add('on');}
-function hidePremiumModal(){document.getElementById('premium-modal').classList.remove('on');}
 
 function startGame(){
   natLang=document.getElementById('sel-nat').value; lrnLang=document.getElementById('sel-lrn').value;
