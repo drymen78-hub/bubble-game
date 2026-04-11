@@ -1,0 +1,48 @@
+{
+  "packageId": "com.bubblepop.picturebook",
+  "host": "YOUR_GITHUB_USERNAME.github.io",
+  "name": "버블팝 그림책",
+  "launcherName": "버블팝",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#6a11cb",
+  "navigationColor": "#6a11cb",
+  "navigationColorDark": "#4a0e9e",
+  "navigationDividerColor": "#6a11cb",
+  "navigationDividerColorDark": "#4a0e9e",
+  "backgroundColor": "#6a11cb",
+  "enableNotifications": false,
+  "startUrl": "/bubble-game/",
+  "iconUrl": "https://YOUR_GITHUB_USERNAME.github.io/bubble-game/android-chrome-512x512.png",
+  "maskableIconUrl": "https://YOUR_GITHUB_USERNAME.github.io/bubble-game/android-chrome-512x512.png",
+  "monochromeIconUrl": "https://YOUR_GITHUB_USERNAME.github.io/bubble-game/android-chrome-192x192.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./bubblepop-release.keystore",
+    "alias": "bubblepop"
+  },
+  "appVersionCode": 1,
+  "appVersion": "1.0.0",
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://YOUR_GITHUB_USERNAME.github.io/bubble-game/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://YOUR_GITHUB_USERNAME.github.io/bubble-game/",
+  "minSdkVersion": 21,
+  "targetSdkVersion": 34,
+  "retainedBundles": []
+}
