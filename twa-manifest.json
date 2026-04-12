@@ -1,6 +1,6 @@
 {
   "packageId": "com.bubblepop.picturebook",
-  "host": "YOUR_GITHUB_USERNAME.github.io",
+  "host": "drymen78-hub.github.io",
   "name": "버블팝 그림책",
   "launcherName": "버블팝",
   "display": "standalone",
@@ -13,9 +13,9 @@
   "backgroundColor": "#6a11cb",
   "enableNotifications": false,
   "startUrl": "/bubble-game/",
-  "iconUrl": "https://YOUR_GITHUB_USERNAME.github.io/bubble-game/android-chrome-512x512.png",
-  "maskableIconUrl": "https://YOUR_GITHUB_USERNAME.github.io/bubble-game/android-chrome-512x512.png",
-  "monochromeIconUrl": "https://YOUR_GITHUB_USERNAME.github.io/bubble-game/android-chrome-192x192.png",
+  "iconUrl": "https://drymen78-hub.github.io/bubble-game/android-chrome-512x512.png",
+  "maskableIconUrl": "https://drymen78-hub.github.io/bubble-game/android-chrome-512x512.png",
+  "monochromeIconUrl": "https://drymen78-hub.github.io/bubble-game/android-chrome-192x192.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "./bubblepop-release.keystore",
@@ -25,7 +25,7 @@
   "appVersion": "1.0.0",
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
-  "webManifestUrl": "https://YOUR_GITHUB_USERNAME.github.io/bubble-game/manifest.json",
+  "webManifestUrl": "https://drymen78-hub.github.io/bubble-game/manifest.json",
   "fallbackType": "customtabs",
   "features": {
     "locationDelegation": {
@@ -41,7 +41,7 @@
   "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
-  "fullScopeUrl": "https://YOUR_GITHUB_USERNAME.github.io/bubble-game/",
+  "fullScopeUrl": "https://drymen78-hub.github.io/bubble-game/",
   "minSdkVersion": 21,
   "targetSdkVersion": 34,
   "retainedBundles": []
