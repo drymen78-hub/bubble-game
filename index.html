@@ -1008,22 +1008,21 @@ function pickVoice(lang){
 function speak(txt,lang,cb){
   if(!window.speechSynthesis){ showToast('이 기기는 음성 읽기를 지원하지 않아요 😢'); return; }
   try{
+    const v=pickVoice(lang);
+    /* 핵심: 이 기기에 해당 언어 음성이 없으면 합성이 불가능 → 조용히 실패 대신 명확히 안내 */
+    if(!v){
+      showToast('😢 이 기기에 '+(LNAMES[lang]||lang)+' 음성이 없어 발음을 들을 수 없어요. (기기 설정 → 음성 추가)');
+      return;
+    }
     /* iOS 버그 회피: 발화 중일 때만 취소(빈 상태 cancel→speak 가 iOS에서 발화를 삼킴) */
     if(speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(txt);
-    u.lang=TCODES[lang]; u.rate=0.85; u.pitch=1.1; u.volume=1;
-    const v=pickVoice(lang); if(v) u.voice=v;
-    let started=false; u.onstart=()=>{ started=true; showToast('▶ 음성 재생 시작('+(v?v.lang:lang)+')'); }; if(cb) u.onend=cb;
-    /* 진단: 실제 기기에서 무슨 일이 일어나는지 화면에 표시 */
-    u.onerror=(ev)=>{ showToast('음성 오류: '+(ev.error||'알수없음')); };
+    u.lang=TCODES[lang]; u.voice=v; u.rate=0.85; u.pitch=1.1; u.volume=1;
+    if(cb) u.onend=cb;
+    u.onerror=(ev)=>{ const er=ev&&ev.error; if(er && er!=='interrupted' && er!=='canceled') showToast('음성 오류: '+er); };
     speechSynthesis.speak(u);
     /* 크롬 모바일 버그 우회: 일시정지 상태로 시작되면 재개 */
     setTimeout(()=>{ try{ if(speechSynthesis.paused) speechSynthesis.resume(); }catch(e){} }, 130);
-    /* 진단 토스트: 음성 개수 + 발화 시작 여부 (소리 안 날 때 원인 파악용) */
-    setTimeout(()=>{
-      if(started || speechSynthesis.speaking) return; // 정상 발화 시작됨 → 침묵이면 볼륨/무음 문제
-      showToast('음성 '+_voices.length+'개 · '+(v?'voice:'+v.lang:'voice없음')+' · 시작안됨');
-    }, 1000);
   }catch(e){}
 }
 function ttsNat(){ speak(stages[cur].w[natLang],natLang); }
