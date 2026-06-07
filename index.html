@@ -682,18 +682,21 @@ function haptic(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){}
 
 const SOUNDS = {
   default: {icon:'🫧', name:'기본 버블', category:'basic', play() {
-    // 또렷한 '톡!' — 빠른 피치 드롭(모음) + 짧은 하이패스 노이즈 클릭(자음)
+    // 물방울 같은 '뽁/톡' — ①매번 살짝 다른 음높이(연타해도 생동감)
+    // ②레조넌스 로우패스 하강 스윕(둥근 음색) ③짧은 하이패스 노이즈 클릭(또렷함)
     const c=getAC(), t=c.currentTime;
-    const o=c.createOscillator(), g=c.createGain();
-    o.type='sine'; o.frequency.setValueAtTime(900,t); o.frequency.exponentialRampToValueAtTime(180,t+0.07);
-    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.34,t+0.005); g.gain.exponentialRampToValueAtTime(0.001,t+0.11);
-    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+0.12);
-    const len=Math.floor(c.sampleRate*0.03), nb=c.createBuffer(1,len,c.sampleRate), d=nb.getChannelData(0);
+    const f0 = 720 + Math.random()*260;            // 720~980Hz 매 팝마다 변주
+    const o=c.createOscillator(), g=c.createGain(), lp=c.createBiquadFilter();
+    o.type='sine'; o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(f0*0.35,t+0.06);
+    lp.type='lowpass'; lp.Q.value=6; lp.frequency.setValueAtTime(f0*3,t); lp.frequency.exponentialRampToValueAtTime(600,t+0.08);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.36,t+0.004); g.gain.exponentialRampToValueAtTime(0.001,t+0.12);
+    o.connect(lp); lp.connect(g); g.connect(c.destination); o.start(t); o.stop(t+0.13);
+    const len=Math.floor(c.sampleRate*0.025), nb=c.createBuffer(1,len,c.sampleRate), d=nb.getChannelData(0);
     for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*(1-i/len);
     const ns=c.createBufferSource(); ns.buffer=nb;
-    const nf=c.createBiquadFilter(); nf.type='highpass'; nf.frequency.value=1600;
-    const ng=c.createGain(); ng.gain.setValueAtTime(0.16,t); ng.gain.exponentialRampToValueAtTime(0.001,t+0.04);
-    ns.connect(nf); nf.connect(ng); ng.connect(c.destination); ns.start(t); ns.stop(t+0.05);
+    const nf=c.createBiquadFilter(); nf.type='highpass'; nf.frequency.value=1800;
+    const ng=c.createGain(); ng.gain.setValueAtTime(0.14,t); ng.gain.exponentialRampToValueAtTime(0.001,t+0.035);
+    ns.connect(nf); nf.connect(ng); ng.connect(c.destination); ns.start(t); ns.stop(t+0.04);
   }},
   dog:{icon:'🐶',name:'강아지',play(){const c=getAC();[0,0.12].forEach(d=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sawtooth';const t=c.currentTime+d;o.frequency.setValueAtTime(320,t);o.frequency.linearRampToValueAtTime(200,t+0.1);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.001,t+0.12);const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=400;o.disconnect();o.connect(f);f.connect(g);o.start(t);o.stop(t+0.15);});}},
   cat:{icon:'🐱',name:'고양이',play(){const c=getAC(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.setValueAtTime(500,c.currentTime);o.frequency.linearRampToValueAtTime(750,c.currentTime+0.1);o.frequency.linearRampToValueAtTime(550,c.currentTime+0.28);g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(0.2,c.currentTime+0.05);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.32);o.start();o.stop(c.currentTime+0.35);}},
