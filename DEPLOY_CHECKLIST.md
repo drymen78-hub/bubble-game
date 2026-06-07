@@ -1,43 +1,43 @@
-# 버블팝 그림책 — 배포 점검 & 남은 작업 (2026-06-08)
+# 버블팝 그림책 — 현황 & 이어서 할 일 (최종 업데이트 2026-06-08)
 
-## ✅ 코드에서 이미 개선 완료 (이 커밋)
-- `privacy.html` 신규 — Play용 **공개 렌더링 가능한** 개인정보처리방침(5개 언어). `.md`는 GitHub Pages에서 HTML로 안 보일 수 있어 HTML 버전 추가.
-- `privacy.md` 개요 문구 수정 — "수집·**저장**·전송·공유 안 함" → "수집·전송·공유 안 함 + 진행정보는 기기 내 저장"으로 정정(3항과 모순 제거, 5개 언어 모두).
-- `.well-known/assetlinks.json` — 플레이스홀더를 **2개 지문 슬롯**(Play 앱서명 키 + 업로드 키)으로 정비.
+> 다음에 이어서 작업할 때 **이 파일부터** 읽으면 됩니다.
 
-## 🔴 반드시 사용자가 해야 하는 것 (코드로 불가)
+## 🟢 현재 상태 — 웹 버전 라이브 완성
+- **라이브**: https://drymen78-hub.github.io/bubble-game/ (GitHub Pages, repo public, `.nojekyll`)
+- **개인정보처리방침**: https://drymen78-hub.github.io/bubble-game/privacy.html
+- 폰 브라우저로 열어 "홈 화면에 추가"하면 앱처럼 전체화면 동작.
+- SW network-first(HTML) → **푸시 후 새로고침하면 즉시 반영**. 현재 캐시 `bubblepop-v9`.
+- ⚠️ GitHub **Settings의 "Change visibility" 누르지 말 것**(토글이라 private로 돌아가 Pages 꺼짐).
 
-### 1. 호스팅 살리기 — 현재 `https://drymen78-hub.github.io/bubble-game/` 가 404
-원인: **repo가 private** → 무료 GitHub Pages는 private repo를 게시하지 않음.
-선택지(택1):
-- **(A) repo를 public 으로 전환** + Settings → Pages → Source: `main / (root)` 활성화. ⚠️ public 전환은 **되돌리기 어려움**(전체 코드·커밋 이력 공개). keystore는 커밋 안 돼 있어 안전하나, 공개 의사 확인 필요.
-- **(B) GitHub Pro** 사용 시 private 유지한 채 Pages 가능.
-- **(C) Cloudflare Workers** 로 호스팅(다른 대시보드들처럼). 단 TWA host가 바뀌므로 **AAB 재빌드 필요**.
+## ✅ 지금까지 반영된 개선 (요약)
+- **손맛**: 버블 팝 햅틱(진동) + 물방울 '뽁/톡' 사운드(팝마다 음높이 변주) + pointerdown 즉시반응·멀티터치.
+- **그림**: 시스템 이모지 → **OpenMoji SVG 162개** 번들(`img/`, 일관된 일러스트, CC BY-SA 4.0 표기).
+- **첫 화면 재설계**: 히어로 + [난이도][주제] + 큰 PLAY + '더보기'(이름·언어·소리·기타 접기). 100dvh+safe-area로 한 화면 맞춤.
+- **나이→난이도 3단계**(쉬움/보통/어려움, 기본 '보통'). 숫자 나이 입력 제거.
+- **재방문성**: 지난 설정(난이도·주제·언어·소리·BGM) 기억.
+- **학습/입소문**: '내 단어장'(맞춘 단어 수집·다시듣기), 청중별 '자랑하기'.
+- **돌아가기**: 결과/타임아웃 화면 '🏠 다른 단어 고르기' + HUD 🏠.
+- **더블탭 확대 방지**: touch-action(연타 시 화면 확대 X).
+- **TTS**: 원래 동작 유지(브라우저 기본 음성으로 단어 발음). ⚠ 아래 '알려진 한계' 참고.
 
-### 2. Digital Asset Links 위치 문제 (중요)
-안드로이드는 `https://drymen78-hub.github.io/.well-known/assetlinks.json` (**도메인 루트**)에서만 검증함.
-그런데 이 앱은 프로젝트 페이지(`/bubble-game/` 하위)라, 이 repo의 `.well-known/`은 검증 위치가 **아님**.
-→ **루트 Pages repo(`drymen78-hub.github.io` 이름)** 를 새로 만들어(public) 그 안에 `.well-known/assetlinks.json` 을 두어야 함.
-   (이 repo의 `.well-known/assetlinks.json` 은 내용 템플릿으로만 사용 — 복사해서 루트 repo에 배치.)
+## 🔴 플레이스토어(TWA) 출시에 남은 일 — 박철순만 가능
+웹은 끝. **앱(스토어) 출시**하려면 아래만 하면 됨:
+1. **Play Console에 AAB 업로드** — `twa-build/app-release-bundle.aab` (비공개 테스트 트랙).
+2. **assetlinks 지문 채우기**:
+   - 업로드 키: `keytool -list -v -keystore twa-build\bubblepop-release.keystore -alias bubblepop` → `SHA256:` 값
+   - Play 앱서명 키: 업로드 후 Play Console → 설정 → 앱 무결성의 SHA-256
+   - 둘 다 → **루트 repo `drymen78-hub.github.io`** 의 `/.well-known/assetlinks.json` 에 배치
+     (도메인 루트에서 검증됨. 이 repo의 `.well-known/assetlinks.json`은 내용 템플릿. 루트 repo는 아직 없음 → 새로 만들어야 함. 클로드가 도와줄 수 있음)
+3. **Play 정책 폼**(어린이=가족 정책): 타겟연령(만13세 미만)·콘텐츠등급·데이터안전(수집없음·기기내저장)·방침URL(`/privacy.html`).
+4. **비공개 테스트 20명 · 14일 연속** → 프로덕션 신청.
 
-### 3. SHA-256 지문 채우기 (`assetlinks.json`)
-- **업로드 키 지문**: 아래 명령으로 추출(비밀번호는 본인이 STEP 4에서 정한 것):
-  ```
-  keytool -list -v -keystore twa-build\bubblepop-release.keystore -alias bubblepop
-  ```
-  출력의 `SHA256:` 값 → `UPLOAD_KEY_SHA256_HERE` 자리에.
-- **Play 앱서명 키 지문**: AAB를 Play Console에 업로드 후 **설정 → 앱 무결성(App signing)** 화면의 SHA-256 → `PLAY_APP_SIGNING_SHA256_HERE` 자리에.
-  (Play App Signing이 출시본을 재서명하므로 이 지문이 **반드시** 들어가야 함. 둘 다 넣는 게 안전.)
+## ⚠️ 알려진 한계 / 다음에 고려할 것
+- **TTS 발음은 기기 음성에 의존**: 해당 언어 음성이 없는 기기는 무음/부정확(예: 영어 음성 없는 Windows). 기기 설정에서 음성 추가하면 해결. **근본 해결 = 단어별 발음 오디오 사전 녹음/생성해 번들**(언어학습앱 정석, 미착수 — 영어부터 추천).
+- 폰트 로컬 번들 미적용(Jua 97개 서브셋 ~1-2MB라 보류). Google Fonts 사용은 privacy에 고지됨.
+- 세션 종료 구조 없음(현재 15단어 무한 루프), 간격반복(SRS) 학습 미적용 — 향후 개선 후보.
+- `twa-build/`는 .gitignore 처리됨(서명키 보호). 네이티브/host 변경 시에만 AAB 재빌드 필요(웹 개선은 재빌드 불필요 — TWA가 라이브 URL 로드).
 
-### 4. Play Console 정책 폼 (어린이 앱이라 필수)
-- **타겟 연령·콘텐츠**: 만 13세 미만 대상 선언 → Google Play **가족(Families) 정책** 적용.
-- **콘텐츠 등급 설문** 작성.
-- **데이터 안전(Data safety)**: 실제 동작과 일치하게 — "데이터 수집 없음, 기기 내 로컬 저장만, 외부 전송 없음".
-- **개인정보처리방침 URL**: `https://drymen78-hub.github.io/bubble-game/privacy.html` (호스팅 살린 뒤).
-
-## 🟡 권장(블로커 아님)
-- **Google Fonts 로컬 번들**: 미적용. 이유 — Jua(한국어) 폰트가 **97개 woff2 서브셋(~1–2MB)** 으로 쪼개져 있어 수작업 번들은 앱을 크게 비대화시킴(단순 키즈 게임에 과함). privacy에 Google Fonts 사용을 이미 고지함. 엄격한 무(無)-3rd-party 통신을 원하면 빌드 도구로 별도 self-host 권장.
-- `appVersionCode`: 루트 `twa-manifest.json`(1) vs `twa-build/app/build.gradle`(2) 불일치 — 업로드마다 versionCode 증가만 지키면 무방.
-
-## 순서 요약
-호스팅 살리기(1) → AAB Play 업로드(비공개 트랙) → 앱서명 지문 확보(3) → 루트 repo에 assetlinks 배치(2·3) → 전체화면 동작 확인 → 정책 폼(4) → 테스터 20명·14일.
+## 작업 환경 메모
+- 로컬: `C:\bubble-game` / repo: github.com/drymen78-hub/bubble-game (public)
+- 단일 파일 `index.html`(인라인 JS) + `sw.js` + `img/`(OpenMoji) + `manifest.json` + `privacy.html`
+- 검증: Edge headless를 playwright-core로 구동(임시폴더). 푸시→Pages 자동빌드(~15초)→새로고침.
