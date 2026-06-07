@@ -205,6 +205,13 @@ body{
   font-size:190px; line-height:1; background:radial-gradient(circle, #3a1c71, #281453);
   transition:filter 0.35s; user-select:none; overflow:hidden; filter:drop-shadow(0 15px 25px rgba(0,0,0,0.6));
 }
+/* OpenMoji 그림(SVG) — 모든 기기에서 동일·또렷한 일러스트 */
+img.oimg{ object-fit:contain; user-select:none; -webkit-user-drag:none; pointer-events:none; }
+#img-layer img.oimg{ width:84%; height:84%; }
+#ov-photo img.oimg{ width:74%; height:74%; }
+#char-emoji img.oimg{ width:1em; height:1em; vertical-align:middle; display:block; }
+.lu-em img.oimg{ width:1em; height:1em; }
+.wb-item-em img.oimg{ width:32px; height:32px; display:block; }
 #bubble-layer{position:absolute; inset:0; display:grid; padding:3px; z-index:2;}
 .bbl{
   border-radius:50%; cursor:pointer; margin:2px;
@@ -502,6 +509,7 @@ body{
 
   <button id="wordbook-btn" onclick="openWordbook()">📖 내 단어장 <span id="wordbook-count">0개</span></button>
   <button id="start-btn" onclick="startGame()">🎮 게임 시작!</button>
+  <div style="font-size:0.62rem;color:rgba(255,255,255,0.45);text-align:center;margin-top:14px;line-height:1.5;">그림 © OpenMoji (CC BY-SA 4.0)</div>
 </div>
 
 <!-- 게임 화면 -->
@@ -808,6 +816,18 @@ function saveProgress(){ localStorage.setItem('bubble_save', JSON.stringify({
 })); }
 function resetProgress(){ if(confirm('정말 모든 학습 진도를 초기화할까요?')){ localStorage.removeItem('bubble_save'); location.reload(); } }
 
+/* OpenMoji 그림 헬퍼 — 다운로드 스크립트와 동일한 코드포인트 규칙.
+   로드 실패(오프라인 미캐시 등) 시 시스템 이모지로 자동 폴백. */
+function emojiCode(e){
+  const zwj = e.indexOf('‍') >= 0;
+  const s = zwj ? e : e.replace(/️/g,'');
+  return [...s].map(c=>c.codePointAt(0).toString(16)).join('-').toUpperCase();
+}
+function picTag(e){
+  return `<img class="oimg" src="img/${emojiCode(e)}.svg" alt="${e}" draggable="false" onerror="this.replaceWith(document.createTextNode(this.alt))">`;
+}
+function setPic(el, e){ el.innerHTML = picTag(e); }
+
 /* [FIX #11] Fisher-Yates 셔플 — 편향 없는 랜덤 */
 function shuffle(arr) {
   const a = [...arr];
@@ -954,7 +974,7 @@ function buildStage(){
   popped=0; done=false; stopTmr(); stopTTS(); hideOverlay();
   document.getElementById('quiz-overlay').classList.remove('on');
   const s=stages[cur]; document.getElementById('quiz-btn').disabled=false;
-  const il=document.getElementById('img-layer'); il.textContent=s.e; il.style.filter='blur(25px)';
+  const il=document.getElementById('img-layer'); setPic(il, s.e); il.style.filter='blur(25px)';
   document.getElementById('prog-bar').style.width='0%';
   document.getElementById('prog-txt').textContent=`0 / ${TOT} 터트림`;
 
@@ -1025,7 +1045,7 @@ function unlockAudio(){
 /* [FIX #6] showResult: iOS TTS 자동재생 제거 + 자랑하기 버튼 제어 */
 function showResult(success){
   const s=stages[cur], rk=success?rank(popped,TOT):null;
-  document.getElementById('ov-photo').textContent=s.e;
+  setPic(document.getElementById('ov-photo'), s.e);
   document.getElementById('ov-nat-lbl').textContent=LNAMES[natLang];
   document.getElementById('ov-nat').textContent=s.w[natLang];
   document.getElementById('ov-lrn-lbl').textContent=LNAMES[lrnLang];
@@ -1323,7 +1343,7 @@ function renderWordbook(){
   body.innerHTML = Object.keys(byGrp).map(g=>{
     const items=byGrp[g].map(w=>
       `<button class="wb-item" onclick="speakWord('${g}','${w.e}')">
-        <span class="wb-item-em">${w.e}</span>
+        <span class="wb-item-em">${picTag(w.e)}</span>
         <span class="wb-item-txt"><span class="wb-item-nat">${w.w[nat]}</span><span class="wb-item-lrn">${w.w[lrn]}</span></span>
         <span class="wb-item-spk">🔊</span>
       </button>`).join('');
@@ -1342,7 +1362,7 @@ function updateHUD(gained){
   let l=0,cum=0;
   for(let i=0;i<LVLS.length;i++){ if(i===LVLS.length-1||xp<cum+LVLS[i].x){ l=i; break; } cum+=LVLS[i].x; }
   const prev=lv; lv=l+1; const ld=LVLS[l], base=LVLS.slice(0,l).reduce((a,b)=>a+b.x,0), cur2=xp-base, nxt=ld.x===Infinity?999:ld.x;
-  document.getElementById('char-emoji').textContent=ld.e;
+  setPic(document.getElementById('char-emoji'), ld.e);
   document.getElementById('char-name').textContent=ld.n;
   document.getElementById('char-lv').textContent=`Lv.${lv}`;
   document.getElementById('xp-bar').style.width=(ld.x===Infinity?100:Math.min(100,cur2/nxt*100))+'%';
@@ -1350,7 +1370,7 @@ function updateHUD(gained){
   document.getElementById('score-num').textContent=score;
   if(lv>prev){
     const p=document.getElementById('lvup');
-    document.getElementById('lu-em').textContent=ld.e;
+    setPic(document.getElementById('lu-em'), ld.e);
     document.getElementById('lu-n').textContent=ld.n;
     p.classList.add('on'); spawnConfetti(); haptic([0,50,60,50,60,90]); setTimeout(()=>p.classList.remove('on'),3000);
   }
