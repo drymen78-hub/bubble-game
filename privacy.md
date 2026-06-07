@@ -12,7 +12,7 @@
 ### 1. 개요
 
 버블팝 그림책(이하 "앱")은 만 13세 미만 어린이를 주요 대상으로 하는 언어 학습 게임입니다.  
-본 앱은 어린이의 개인정보 보호를 최우선으로 하며, **어떠한 개인정보도 수집·저장·전송·공유하지 않습니다.**
+본 앱은 어린이의 개인정보 보호를 최우선으로 하며, **어떠한 개인정보도 수집·전송·공유하지 않습니다.** (게임 진행 정보는 외부 전송 없이 기기 내에만 저장됩니다 — 아래 3항 참조.)
 
 ---
 
@@ -120,7 +120,7 @@
 ### 1. Overview
 
 Bubble Pop Picture Book ("the App") is a language learning game primarily designed for children under 13 years of age.  
-The App treats children's privacy as its highest priority and **does not collect, store, transmit, or share any personal information.**
+The App treats children's privacy as its highest priority and **does not collect, transmit, or share any personal information.** (Game progress is stored only on the device and is never transmitted — see Section 3.)
 
 ---
 
@@ -225,7 +225,7 @@ For privacy inquiries, data deletion requests, or any other questions:
 ### 概要
 
 バブルポップ絵本（以下「本アプリ」）は、13歳未満のお子様を主な対象とした語学学習ゲームです。  
-本アプリは**個人情報を一切収集・保存・送信・共有しません。**
+本アプリは**個人情報を一切収集・送信・共有しません。**（ゲームの進行状況は外部に送信されず、デバイス内にのみ保存されます。）
 
 ### 収集する情報
 
@@ -254,7 +254,7 @@ drymen78@gmail.com
 ### 概述
 
 泡泡书（以下简称"本应用"）是一款主要面向13岁以下儿童的语言学习游戏。  
-本应用**不收集、存储、传输或共享任何个人信息。**
+本应用**不收集、传输或共享任何个人信息。**（游戏进度仅保存在设备本地，不会外传。）
 
 ### 收集的信息
 
@@ -283,7 +283,7 @@ drymen78@gmail.com
 ### Descripción General
 
 Bubble Pop Picture Book ("la Aplicación") es un juego de aprendizaje de idiomas diseñado principalmente para niños menores de 13 años.  
-La Aplicación **no recopila, almacena, transmite ni comparte ninguna información personal.**
+La Aplicación **no recopila, transmite ni comparte ninguna información personal.** (El progreso del juego se almacena solo en el dispositivo y nunca se transmite.)
 
 ### Información que No Recopilamos
 

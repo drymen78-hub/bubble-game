@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "com.bubblepop.picturebook",
       "sha256_cert_fingerprints": [
-        "REPLACE_WITH_YOUR_SHA256_FINGERPRINT"
+        "PLAY_APP_SIGNING_SHA256_HERE",
+        "UPLOAD_KEY_SHA256_HERE"
       ]
     }
   }

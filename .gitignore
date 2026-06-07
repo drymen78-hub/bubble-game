@@ -1,0 +1,15 @@
+# TWA 빌드 산출물 — 서명 keystore·AAB·APK 포함. 절대 커밋 금지(특히 public repo 전환 시 유출 위험).
+twa-build/
+
+# 서명 키 (어디에 있든)
+*.keystore
+*.jks
+
+# 로컬 에이전트/에디터
+.claude/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
