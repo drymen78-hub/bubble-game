@@ -108,6 +108,39 @@ body{
 #start-btn.on:active{ transform:translateY(6px); box-shadow: 0 0 0 #019074; animation:none; }
 @keyframes pulseStart{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.03); box-shadow: 0 8px 0 #019074, 0 15px 30px rgba(0,206,201,0.6);} }
 
+/* 내 단어장 버튼 */
+#wordbook-btn{
+  width:100%; min-height:54px; display:flex; align-items:center; justify-content:center; gap:8px;
+  margin-bottom:10px; padding:14px; border:none; border-radius:22px; font-family:inherit;
+  font-size:1.1rem; font-weight:900; cursor:pointer; color:#2d3436;
+  background:linear-gradient(135deg,#ffeaa7,#fdcb6e); box-shadow:0 6px 0 #e1b12c, 0 8px 18px rgba(253,203,110,0.4);
+  transition:transform 0.1s; text-shadow:0 1px 2px rgba(255,255,255,0.3);
+}
+#wordbook-btn:active{ transform:translateY(6px); box-shadow:0 0 0 #e1b12c; }
+#wordbook-count{ font-size:0.85rem; background:rgba(45,52,54,0.18); padding:2px 10px; border-radius:12px; }
+
+/* 내 단어장 모달 */
+#wordbook-overlay{ display:none; position:fixed; inset:0; z-index:400; background:rgba(0,0,0,0.72); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); align-items:flex-end; justify-content:center; }
+#wordbook-overlay.on{ display:flex; }
+#wordbook-box{ width:100%; max-width:480px; max-height:85vh; overflow-y:auto; background:linear-gradient(160deg,#1a1a3e,#0d0d2b); border-radius:32px 32px 0 0; padding:0 0 env(safe-area-inset-bottom,20px); border:2px solid rgba(255,255,255,0.15); border-bottom:none; box-shadow:0 -20px 60px rgba(0,0,0,0.5); animation:slideUp 0.35s cubic-bezier(0.175,0.885,0.32,1.275); }
+#wordbook-header{ display:flex; align-items:flex-start; justify-content:space-between; padding:8px 20px 12px; }
+#wordbook-title{ font-size:1.3rem; font-weight:900; color:#fff; }
+#wordbook-sub{ font-size:0.82rem; color:#a29bfe; font-weight:bold; margin-top:2px; }
+#wordbook-close-btn{ width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.1); border:none; color:#fff; font-size:1.1rem; cursor:pointer; flex-shrink:0; }
+#wordbook-body{ padding:0 16px 8px; }
+.wb-empty{ text-align:center; color:#dfe6e9; padding:40px 20px; font-weight:bold; line-height:1.8; }
+.wb-empty-em{ font-size:3rem; display:block; margin-bottom:10px; }
+.wb-group{ margin-bottom:16px; }
+.wb-group-title{ font-size:0.9rem; font-weight:900; color:#ffeaa7; margin:6px 4px 8px; }
+.wb-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.wb-item{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:16px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); cursor:pointer; transition:all 0.12s; text-align:left; }
+.wb-item:active{ transform:scale(0.96); background:rgba(162,155,254,0.25); }
+.wb-item-em{ font-size:1.8rem; flex-shrink:0; }
+.wb-item-txt{ min-width:0; }
+.wb-item-nat{ font-size:0.9rem; font-weight:900; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wb-item-lrn{ font-size:0.78rem; color:#74b9ff; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wb-item-spk{ margin-left:auto; font-size:0.95rem; opacity:0.6; flex-shrink:0; }
+
 .sound-category-label{font-size:0.75rem;color:#dfe6e9;margin:8px 0 6px;padding-left:4px;font-weight:bold;}
 .sound-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px;}
 .snd-btn{
@@ -467,6 +500,7 @@ body{
     </div>
   </div>
 
+  <button id="wordbook-btn" onclick="openWordbook()">📖 내 단어장 <span id="wordbook-count">0개</span></button>
   <button id="start-btn" onclick="startGame()">🎮 게임 시작!</button>
 </div>
 
@@ -602,6 +636,21 @@ body{
   </div>
 </div>
 
+<!-- 내 단어장 모달 -->
+<div id="wordbook-overlay" onclick="wordbookOverlayClick(event)">
+  <div id="wordbook-box">
+    <div class="share-handle"></div>
+    <div id="wordbook-header">
+      <div>
+        <div id="wordbook-title">📖 내 단어장</div>
+        <div id="wordbook-sub"></div>
+      </div>
+      <button id="wordbook-close-btn" onclick="closeWordbook()">✕</button>
+    </div>
+    <div id="wordbook-body"></div>
+  </div>
+</div>
+
 <!-- 복사 완료 토스트 -->
 <div id="copy-toast">✅ 클립보드에 복사됐어요!</div>
 
@@ -620,8 +669,24 @@ let bgmStep = 0;
 
 function getAC() { if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); return ac; }
 
+/* 햅틱(진동) — 버블 터지는 '손맛'. 미지원 기기는 조용히 무시 */
+function haptic(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+
 const SOUNDS = {
-  default: {icon:'🫧', name:'기본 버블', category:'basic', play() {const c=getAC(), o=c.createOscillator(), g=c.createGain(); o.connect(g); g.connect(c.destination); o.type='sine'; o.frequency.setValueAtTime(800, c.currentTime); o.frequency.exponentialRampToValueAtTime(150, c.currentTime+0.1); g.gain.setValueAtTime(0.3, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime+0.1); o.start(); o.stop(c.currentTime+0.12);}},
+  default: {icon:'🫧', name:'기본 버블', category:'basic', play() {
+    // 또렷한 '톡!' — 빠른 피치 드롭(모음) + 짧은 하이패스 노이즈 클릭(자음)
+    const c=getAC(), t=c.currentTime;
+    const o=c.createOscillator(), g=c.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(900,t); o.frequency.exponentialRampToValueAtTime(180,t+0.07);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.34,t+0.005); g.gain.exponentialRampToValueAtTime(0.001,t+0.11);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+0.12);
+    const len=Math.floor(c.sampleRate*0.03), nb=c.createBuffer(1,len,c.sampleRate), d=nb.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*(1-i/len);
+    const ns=c.createBufferSource(); ns.buffer=nb;
+    const nf=c.createBiquadFilter(); nf.type='highpass'; nf.frequency.value=1600;
+    const ng=c.createGain(); ng.gain.setValueAtTime(0.16,t); ng.gain.exponentialRampToValueAtTime(0.001,t+0.04);
+    ns.connect(nf); nf.connect(ng); ng.connect(c.destination); ns.start(t); ns.stop(t+0.05);
+  }},
   dog:{icon:'🐶',name:'강아지',play(){const c=getAC();[0,0.12].forEach(d=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sawtooth';const t=c.currentTime+d;o.frequency.setValueAtTime(320,t);o.frequency.linearRampToValueAtTime(200,t+0.1);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.001,t+0.12);const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=400;o.disconnect();o.connect(f);f.connect(g);o.start(t);o.stop(t+0.15);});}},
   cat:{icon:'🐱',name:'고양이',play(){const c=getAC(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.setValueAtTime(500,c.currentTime);o.frequency.linearRampToValueAtTime(750,c.currentTime+0.1);o.frequency.linearRampToValueAtTime(550,c.currentTime+0.28);g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(0.2,c.currentTime+0.05);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.32);o.start();o.stop(c.currentTime+0.35);}},
   bird:{icon:'🐦',name:'참새',play(){const c=getAC();[0,0.09,0.18].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';const t=c.currentTime+d;o.frequency.setValueAtTime(3200+i*200,t);g.gain.setValueAtTime(0.15,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.09);o.start(t);o.stop(t+0.1);});}},
@@ -639,7 +704,7 @@ const SOUNDS = {
 const SOUND_BASIC=['default']; const SOUND_ANIMAL=['dog','cat','bird','frog','mouse','duck']; const SOUND_MELODY=['piano','guitar','phone','xylophone','magic','harp','coin'];
 
 function buildSoundUI() {
-  const r=(ids,id)=>{document.getElementById(id).innerHTML=ids.map(i=>`<button class="snd-btn${selSound===i?' sel':''}" id="snd-${i}" onclick="selSound='${i}';buildSoundUI()"><span class="snd-icon">${SOUNDS[i].icon}</span>${SOUNDS[i].name}</button>`).join('');};
+  const r=(ids,id)=>{document.getElementById(id).innerHTML=ids.map(i=>`<button class="snd-btn${selSound===i?' sel':''}" id="snd-${i}" onclick="selSound='${i}';buildSoundUI();saveProgress();SOUNDS['${i}'].play()"><span class="snd-icon">${SOUNDS[i].icon}</span>${SOUNDS[i].name}</button>`).join('');};
   r(SOUND_BASIC,'snd-basic');r(SOUND_ANIMAL,'snd-animal');r(SOUND_MELODY,'snd-melody');
 }
 function previewSound() { SOUNDS[selSound].play(); }
@@ -650,6 +715,7 @@ function toggleBgm() {
   document.getElementById('bgm-btn').textContent = bgmOn ? '🎵 BGM: 켜짐' : '🎵 BGM: 꺼짐';
   document.getElementById('bgm-btn').style.background = bgmOn ? 'linear-gradient(135deg, #00b894, #00cec9)' : 'linear-gradient(135deg, #a29bfe, #6c5ce7)';
   if (bgmOn) { startBgm(); } else { stopBgm(); }
+  saveProgress();
 }
 function startBgm() {
   if (bgmInterval) return;
@@ -714,17 +780,32 @@ let C=6,R=6,TL=60,TOT=36,stages=[],cur=0,popped=0,done=false;
 let score=0,xp=0,lv=1,tmrId=null,tLeft=0,repId=null;
 let childName='';      // 아이 이름
 let lastResult=null;   // 자랑하기용 최근 결과 캐시
+let learnedKeys=new Set(); // 맞춘 단어 수집(도감) — 'grp|emoji'
+let savedNat=null, savedLrn=null; // 지난 언어 선택 복원용
 
 /* [FIX #5] loadProgress: JSON.parse try/catch 추가 + childName 포함 */
 function loadProgress(){
   try {
     const s = localStorage.getItem('bubble_save');
-    if(s){ const d=JSON.parse(s); score=d.score||0; xp=d.xp||0; lv=d.lv||1; childName=d.name||''; }
+    if(s){ const d=JSON.parse(s);
+      score=d.score||0; xp=d.xp||0; lv=d.lv||1; childName=d.name||'';
+      // 지난 설정 기억 — 재방문 시 다시 고르는 마찰 최소화
+      if(d.age) selAge=d.age;
+      if(d.grp) selGrp=d.grp;
+      if(d.snd && SOUNDS[d.snd]) selSound=d.snd;
+      bgmOn=!!d.bgm; savedNat=d.nat||null; savedLrn=d.lrn||null;
+      if(selAge){ const a=AGES.find(x=>x.id===selAge); if(a){ C=a.C; R=a.R; TL=a.T; TOT=C*R; } }
+      if(Array.isArray(d.learned)) learnedKeys=new Set(d.learned);
+    }
   } catch(e) {
     localStorage.removeItem('bubble_save');
   }
 }
-function saveProgress(){ localStorage.setItem('bubble_save', JSON.stringify({score,xp,lv,name:childName})); }
+function saveProgress(){ localStorage.setItem('bubble_save', JSON.stringify({
+  score, xp, lv, name:childName,
+  age:selAge, grp:selGrp, nat:natLang, lrn:lrnLang, snd:selSound, bgm:bgmOn,
+  learned:[...learnedKeys]
+})); }
 function resetProgress(){ if(confirm('정말 모든 학습 진도를 초기화할까요?')){ localStorage.removeItem('bubble_save'); location.reload(); } }
 
 /* [FIX #11] Fisher-Yates 셔플 — 편향 없는 랜덤 */
@@ -743,7 +824,7 @@ function buildSetup(){
   AGES.forEach(a=>{
     const b=document.createElement('button'); b.className='age-btn'+(selAge===a.id?' sel':'');
     b.innerHTML=`<span class="age-icon">${a.icon}</span><b>${a.lbl}</b><span style="font-size:0.75rem;color:#dfe6e9;display:block;margin-top:2px;">${a.desc}</span>`;
-    b.onclick=()=>{selAge=a.id;selGrp=null;C=a.C;R=a.R;TL=a.T;TOT=C*R;buildSetup();}; ag.appendChild(b);
+    b.onclick=()=>{selAge=a.id;selGrp=null;C=a.C;R=a.R;TL=a.T;TOT=C*R;buildSetup();saveProgress();}; ag.appendChild(b);
   });
 
   const gg=document.getElementById('grp-grid'); gg.innerHTML='';
@@ -755,10 +836,10 @@ function buildSetup(){
     const gIcon=ic[g]||'📁';
     b.className='grp-btn'+(selAge?' on':'')+(selGrp===g?' sel':'');
     b.innerHTML=`<span class="grp-icon">${gIcon}</span>${g}${rec?'<br><span style="font-size:0.65rem;color:#ffeaa7;font-weight:bold;">★추천</span>':''}`;
-    b.onclick=()=>{ selGrp=g; buildSetup(); };
+    b.onclick=()=>{ selGrp=g; buildSetup(); saveProgress(); };
     gg.appendChild(b);
   });
-  document.getElementById('start-btn').classList.toggle('on',!!(selAge&&selGrp)); buildSoundUI();
+  document.getElementById('start-btn').classList.toggle('on',!!(selAge&&selGrp)); buildSoundUI(); updateWordbookCount();
 }
 
 function startGame(){
@@ -813,8 +894,8 @@ function onTimeout(){
 }
 
 /* ══ 애니메이션/효과 ══ */
-function playClear(){ try{ const c=getAC(), notes=[523.25,659.25,783.99,1046.50]; notes.forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='triangle';o.frequency.value=f;const t=c.currentTime+i*0.08;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.001,t+0.5);o.start(t);o.stop(t+0.55);}); }catch(e){} }
-function playFail(){ try{ const c=getAC();[300,240,180].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;o.type='sawtooth';const t=c.currentTime+i*0.18;g.gain.setValueAtTime(0.15,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.25);o.start(t);o.stop(t+0.25);}); }catch(e){} }
+function playClear(){ haptic([0,30,40,55]); try{ const c=getAC(), notes=[523.25,659.25,783.99,1046.50]; notes.forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='triangle';o.frequency.value=f;const t=c.currentTime+i*0.08;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.001,t+0.5);o.start(t);o.stop(t+0.55);}); }catch(e){} }
+function playFail(){ haptic(80); try{ const c=getAC();[300,240,180].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;o.type='sawtooth';const t=c.currentTime+i*0.18;g.gain.setValueAtTime(0.15,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.25);o.start(t);o.stop(t+0.25);}); }catch(e){} }
 
 function star(x,y){
   ['⭐','✨','💫','🎈','🎉'].forEach((ic,i)=>{
@@ -890,7 +971,7 @@ function buildStage(){
 function bubbleClick(b){
   if(done)return;
   if(b.classList.contains('pop')||b.classList.contains('gone'))return;
-  b.classList.add('pop'); SOUNDS[selSound].play();
+  b.classList.add('pop'); SOUNDS[selSound].play(); haptic(12);
   const r=b.getBoundingClientRect(); star(r.left+r.width/2, r.top+r.height/2);
   setTimeout(()=>b.classList.add('gone'),200); popped++;
   document.getElementById('img-layer').style.filter=`blur(${Math.max(0,25*(1-popped/TOT)).toFixed(1)}px)`;
@@ -951,6 +1032,7 @@ function showResult(success){
   document.getElementById('ov-lrn').textContent=s.w[lrnLang];
   if(success){
     score+=rk.xp;
+    learnedKeys.add(selGrp+'|'+s.e); // 도감에 수집(맞춘 단어)
     document.getElementById('ov-rank').innerHTML=`<span style="color:${rk.c}">${rk.lbl}</span>`;
     document.getElementById('ov-xp').textContent=`+${rk.xp} XP 획득!`;
     document.getElementById('ov-msg').textContent=rk.m;
@@ -1208,6 +1290,52 @@ function showToast(txt){
   setTimeout(()=> t.classList.remove('show'), 2500);
 }
 
+/* ══════════════════════════════════════
+   내 단어장 (도감) — 맞춘 단어 모아 다시 듣기
+══════════════════════════════════════ */
+function updateWordbookCount(){
+  const el=document.getElementById('wordbook-count');
+  if(el) el.textContent = learnedKeys.size + '개';
+}
+function openWordbook(){ renderWordbook(); document.getElementById('wordbook-overlay').classList.add('on'); }
+function closeWordbook(){ stopTTS(); document.getElementById('wordbook-overlay').classList.remove('on'); }
+function wordbookOverlayClick(e){ if(e.target===document.getElementById('wordbook-overlay')) closeWordbook(); }
+
+function renderWordbook(){
+  const nat=document.getElementById('sel-nat').value||natLang;
+  const lrn=document.getElementById('sel-lrn').value||lrnLang;
+  const body=document.getElementById('wordbook-body');
+  document.getElementById('wordbook-sub').textContent =
+    learnedKeys.size>0 ? `지금까지 ${learnedKeys.size}개! 단어를 누르면 소리가 나요 🔊` : '';
+
+  if(learnedKeys.size===0){
+    body.innerHTML=`<div class="wb-empty"><span class="wb-empty-em">🫧</span>아직 모은 단어가 없어요.<br>버블을 터뜨리고 단어를 맞히면<br>여기에 차곡차곡 모여요!</div>`;
+    return;
+  }
+  const byGrp={};
+  learnedKeys.forEach(k=>{
+    const idx=k.indexOf('|'); if(idx<0) return;
+    const g=k.slice(0,idx), e=k.slice(idx+1);
+    const word=(GRPS[g]||[]).find(x=>x.e===e); if(!word) return;
+    (byGrp[g]=byGrp[g]||[]).push(word);
+  });
+  const ic={동물:'🐾',과일:'🍎',색깔:'🎨',음식:'🍕',탈것:'🚗',자연:'🌿',직업:'👔',나라:'🌍',스포츠:'⚽',수도:'🏛️','K컬처':'🇰🇷'};
+  body.innerHTML = Object.keys(byGrp).map(g=>{
+    const items=byGrp[g].map(w=>
+      `<button class="wb-item" onclick="speakWord('${g}','${w.e}')">
+        <span class="wb-item-em">${w.e}</span>
+        <span class="wb-item-txt"><span class="wb-item-nat">${w.w[nat]}</span><span class="wb-item-lrn">${w.w[lrn]}</span></span>
+        <span class="wb-item-spk">🔊</span>
+      </button>`).join('');
+    return `<div class="wb-group"><div class="wb-group-title">${ic[g]||'📁'} ${g} (${byGrp[g].length})</div><div class="wb-grid">${items}</div></div>`;
+  }).join('');
+}
+function speakWord(g,e){
+  const lrn=document.getElementById('sel-lrn').value||lrnLang;
+  const word=(GRPS[g]||[]).find(x=>x.e===e); if(!word) return;
+  haptic(8); unlockAudio(); speak(word.w[lrn], lrn);
+}
+
 /* HUD 업데이트 */
 function updateHUD(gained){
   xp+=gained; saveProgress();
@@ -1224,7 +1352,7 @@ function updateHUD(gained){
     const p=document.getElementById('lvup');
     document.getElementById('lu-em').textContent=ld.e;
     document.getElementById('lu-n').textContent=ld.n;
-    p.classList.add('on'); spawnConfetti(); setTimeout(()=>p.classList.remove('on'),3000);
+    p.classList.add('on'); spawnConfetti(); haptic([0,50,60,50,60,90]); setTimeout(()=>p.classList.remove('on'),3000);
   }
 }
 
@@ -1233,17 +1361,23 @@ window.addEventListener('DOMContentLoaded', () => {
   loadProgress();
   buildSetup();
 
-  /* [FIX #12] 이벤트 위임: bubble-layer에 리스너 1개만 등록 */
+  /* 지난 언어 선택 복원 + 변경 시 기억 */
+  const selNat=document.getElementById('sel-nat'), selLrn=document.getElementById('sel-lrn');
+  if(savedNat) selNat.value=savedNat;
+  if(savedLrn) selLrn.value=savedLrn;
+  natLang=selNat.value; lrnLang=selLrn.value;
+  selNat.addEventListener('change',()=>{ natLang=selNat.value; saveProgress(); });
+  selLrn.addEventListener('change',()=>{ lrnLang=selLrn.value; saveProgress(); });
+  /* BGM 버튼 상태 복원(실제 재생은 게임 시작 시) */
+  if(bgmOn){ const bb=document.getElementById('bgm-btn'); bb.textContent='🎵 BGM: 켜짐'; bb.style.background='linear-gradient(135deg, #00b894, #00cec9)'; }
+  updateWordbookCount();
+
+  /* [FIX #12] 이벤트 위임: bubble-layer에 리스너 1개만 등록.
+     pointerdown 으로 통일 → 마우스·터치·펜 모두, 누르는 즉시(지연 0) 반응 + 멀티터치 연타 가능. */
   const bl = document.getElementById('bubble-layer');
-  bl.addEventListener('click', (e) => {
+  bl.addEventListener('pointerdown', (e) => {
     const b = e.target.closest('.bbl');
-    if(b) bubbleClick(b);
-  });
-  bl.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    const touch = e.changedTouches[0];
-    const b = document.elementFromPoint(touch.clientX, touch.clientY);
-    if(b && b.classList.contains('bbl')) bubbleClick(b);
+    if(b){ e.preventDefault(); bubbleClick(b); }
   }, {passive: false});
 
   /* [FIX #10] 스플래시: 강제 2초 대기 제거 → 리소스 로드 완료 후 최소 지연만 */
