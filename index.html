@@ -30,7 +30,10 @@ body{
   align-items:center; font-family:'Nunito', 'Jua', sans-serif;
   color:#fff; padding:15px 12px 40px; overflow-x:hidden;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* iOS 더블탭 확대 방지(핀치줌은 유지) */
 }
+/* 버블 연타 영역: 확대·스크롤 제스처 완전 차단 — 빠른 연속 터치 시 화면 확대 방지 */
+#game-area, #bubble-layer, .bbl { touch-action: none; }
 
 @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
@@ -987,6 +990,12 @@ function spawnConfetti() {
    안드로이드 크롬은 음성 목록을 비동기로 늦게 채우므로 미리 로드해 둔다. */
 let _voices = [];
 function loadVoices(){ try{ _voices = window.speechSynthesis ? (speechSynthesis.getVoices()||[]) : []; }catch(e){ _voices=[]; } }
+/* iOS는 사용자 제스처로 음성을 한 번 '깨워'줘야 이후 발화가 나온다(무음 utterance로 프라이밍) */
+let _speechPrimed = false;
+function primeSpeech(){
+  if(_speechPrimed || !window.speechSynthesis) return;
+  try{ const u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u); _speechPrimed=true; }catch(e){}
+}
 function pickVoice(lang){
   if(!_voices.length) loadVoices();
   const code = (TCODES[lang]||'').toLowerCase();
@@ -999,9 +1008,10 @@ function pickVoice(lang){
 function speak(txt,lang,cb){
   if(!window.speechSynthesis){ showToast('이 기기는 음성 읽기를 지원하지 않아요 😢'); return; }
   try{
-    speechSynthesis.cancel();
+    /* iOS 버그 회피: 발화 중일 때만 취소(빈 상태 cancel→speak 가 iOS에서 발화를 삼킴) */
+    if(speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(txt);
-    u.lang=TCODES[lang]; u.rate=0.85; u.pitch=1.1;
+    u.lang=TCODES[lang]; u.rate=0.85; u.pitch=1.1; u.volume=1;
     const v=pickVoice(lang); if(v) u.voice=v;
     let started=false; u.onstart=()=>{ started=true; }; if(cb) u.onend=cb;
     speechSynthesis.speak(u);
@@ -1452,7 +1462,7 @@ window.addEventListener('DOMContentLoaded', () => {
   updateWordbookCount();
 
   /* TTS 음성 미리 로드 — 안드로이드 크롬은 voiceschanged 후에야 목록이 채워짐 */
-  if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+  if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; document.addEventListener('pointerdown', primeSpeech); }
 
   /* [FIX #12] 이벤트 위임: bubble-layer에 리스너 1개만 등록.
      pointerdown 으로 통일 → 마우스·터치·펜 모두, 누르는 즉시(지연 0) 반응 + 멀티터치 연타 가능. */

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bubblepop-v5';
+const CACHE_NAME = 'bubblepop-v6';
 const STATIC_ASSETS = [
   './',
   './index.html',
