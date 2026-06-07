@@ -67,7 +67,22 @@ body{
 }
 .card h3{font-size:1rem;color:#ffeaa7;margin-bottom:12px;text-shadow:0 2px 4px rgba(0,0,0,0.2);}
 
-.age-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.age-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+/* 히어로(첫 화면 상단) */
+.hero-bubble{ font-size:4.2rem; filter:drop-shadow(0 6px 12px rgba(0,0,0,0.3)); animation:float 3s ease-in-out infinite; }
+.hero-title{ font-size:2.2rem; color:#fff; font-weight:900; text-shadow:0 3px 8px rgba(0,0,0,0.4); letter-spacing:1px; margin-top:8px; }
+.hero-tagline{ font-size:0.95rem; color:#ffeaa7; font-weight:bold; margin-top:6px; text-shadow:0 2px 4px rgba(0,0,0,0.3); }
+
+/* 더보기(접기) — 이름·언어·소리·기타 */
+.opt-tag{ font-size:0.7rem; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:10px; font-weight:bold; vertical-align:middle; color:#dfe6e9; }
+#more-toggle{ width:100%; min-height:50px; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border:2px dashed rgba(255,255,255,0.35); border-radius:18px; background:rgba(255,255,255,0.06); color:#f1f2f6; font-size:0.95rem; font-weight:bold; cursor:pointer; font-family:inherit; transition:all 0.15s; }
+#more-toggle:hover{ background:rgba(255,255,255,0.14); }
+#more-caret{ display:inline-block; transition:transform 0.25s; }
+#more-toggle.open #more-caret{ transform:rotate(180deg); }
+#more-settings{ display:none; width:100%; flex-direction:column; gap:14px; }
+#more-settings.open{ display:flex; }
+.credit{ font-size:0.62rem; color:rgba(255,255,255,0.45); text-align:center; margin-top:6px; line-height:1.5; }
 .age-btn{
   min-height: 85px; display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding:12px 6px; border:2px solid rgba(255,255,255,0.4); border-radius:18px;
@@ -431,6 +446,7 @@ img.oimg{ object-fit:contain; user-select:none; -webkit-user-drag:none; pointer-
   .title-area { grid-column: 1 / -1; margin-bottom: 10px; }
   .card { height: 100%; display: flex; flex-direction: column; justify-content: flex-start; }
   #start-btn { grid-column: 1 / -1; max-width: 400px; margin: 10px auto; }
+  #wordbook-btn, #more-toggle, #more-settings, .credit { grid-column: 1 / -1; }
 
   #game-screen { max-width: 650px; }
   #hud { padding: 18px 24px; border-radius: 24px; gap: 20px; }
@@ -471,51 +487,56 @@ img.oimg{ object-fit:contain; user-select:none; -webkit-user-drag:none; pointer-
 <!-- 설정 화면 -->
 <div id="setup-screen" style="display:none;">
   <div class="title-area">
-    <!-- [FIX #2] float 키프레임 정의로 이제 실제 동작 -->
-    <div style="font-size:3.5rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3)); animation: float 3s ease-in-out infinite;">🫧</div>
-    <div style="font-size:2rem;color:#fff;font-weight:900;text-shadow:0 3px 6px rgba(0,0,0,0.4);letter-spacing:1px;margin-top:10px;">버블팝 그림책</div>
+    <div class="hero-bubble">🫧</div>
+    <div class="hero-title">버블팝 그림책</div>
+    <div class="hero-tagline">버블 톡톡! 터뜨리며 단어 배우기 🎈</div>
   </div>
 
-  <div class="card">
-    <h3>① 아이 이름이 뭐예요? 😊</h3>
-    <div class="name-input-wrap">
-      <input type="text" id="child-name-input" placeholder="이름을 입력해주세요 (선택)" maxlength="10" autocomplete="off">
-      <button class="name-clear-btn" id="name-clear-btn" onclick="clearName()">✕</button>
-    </div>
-    <div class="name-preview" id="name-preview"></div>
-  </div>
+  <div class="card"><h3>난이도를 골라요 🎯</h3><div class="age-grid" id="age-grid"></div></div>
 
-  <div class="card"><h3>② 나는 몇 살인가요?</h3><div class="age-grid" id="age-grid"></div></div>
+  <div class="card"><h3>무엇을 배울까요? 📚</h3><div class="grp-grid" id="grp-grid"></div></div>
 
-  <div class="card"><h3>③ 어떤 단어를 배울까요?</h3><div class="grp-grid" id="grp-grid"></div></div>
-
-  <div class="card">
-    <h3>④ 언어 설정</h3>
-    <div class="lbl">🏠 모국어</div>
-    <select class="lang-sel" id="sel-nat"><option value="ko">🇰🇷 한국어</option><option value="en">🇺🇸 English</option><option value="ja">🇯🇵 日本語</option><option value="zh">🇨🇳 中文</option><option value="es">🇪🇸 Español</option></select>
-    <div class="lbl">📚 학습어</div>
-    <select class="lang-sel" id="sel-lrn"><option value="en">🇺🇸 English</option><option value="ko">🇰🇷 한국어</option><option value="ja">🇯🇵 日本語</option><option value="zh">🇨🇳 中文</option><option value="es">🇪🇸 Español</option></select>
-  </div>
-
-  <div class="card">
-    <h3>⑤ 버블 터지는 소리 🔊</h3>
-    <div class="sound-category-label">🫧 기본</div><div class="sound-grid" id="snd-basic"></div>
-    <div class="sound-category-label">🐾 동물 단음</div><div class="sound-grid" id="snd-animal"></div>
-    <div class="sound-category-label">🎵 멜로디 악기</div><div class="sound-grid" id="snd-melody"></div>
-    <button class="preview-btn" id="preview-btn" onclick="previewSound()">▶ 선택한 소리 미리듣기</button>
-  </div>
-
-  <div class="card">
-    <h3>⑥ 기타 설정 ⚙️</h3>
-    <div class="misc-grid">
-      <button class="misc-btn" id="bgm-btn" onclick="toggleBgm()">🎵 BGM: 꺼짐</button>
-      <button class="misc-btn" id="reset-btn" onclick="resetProgress()">🗑️ 진도 초기화</button>
-    </div>
-  </div>
-
+  <button id="start-btn" onclick="startGame()">🎮 시작하기!</button>
   <button id="wordbook-btn" onclick="openWordbook()">📖 내 단어장 <span id="wordbook-count">0개</span></button>
-  <button id="start-btn" onclick="startGame()">🎮 게임 시작!</button>
-  <div style="font-size:0.62rem;color:rgba(255,255,255,0.45);text-align:center;margin-top:14px;line-height:1.5;">그림 © OpenMoji (CC BY-SA 4.0)</div>
+
+  <!-- 더보기: 이름·언어·소리·기타 (기본 접힘 — 첫 화면을 단순하게) -->
+  <button id="more-toggle" onclick="toggleMore()">⚙️ 이름 · 언어 · 소리 설정 <span id="more-caret">▾</span></button>
+  <div id="more-settings">
+    <div class="card">
+      <h3>아이 이름 😊 <span class="opt-tag">선택</span></h3>
+      <div class="name-input-wrap">
+        <input type="text" id="child-name-input" placeholder="이름을 입력해주세요" maxlength="10" autocomplete="off">
+        <button class="name-clear-btn" id="name-clear-btn" onclick="clearName()">✕</button>
+      </div>
+      <div class="name-preview" id="name-preview"></div>
+    </div>
+
+    <div class="card">
+      <h3>언어 설정 🌍</h3>
+      <div class="lbl">🏠 모국어</div>
+      <select class="lang-sel" id="sel-nat"><option value="ko">🇰🇷 한국어</option><option value="en">🇺🇸 English</option><option value="ja">🇯🇵 日本語</option><option value="zh">🇨🇳 中文</option><option value="es">🇪🇸 Español</option></select>
+      <div class="lbl">📚 학습어</div>
+      <select class="lang-sel" id="sel-lrn"><option value="en">🇺🇸 English</option><option value="ko">🇰🇷 한국어</option><option value="ja">🇯🇵 日本語</option><option value="zh">🇨🇳 中文</option><option value="es">🇪🇸 Español</option></select>
+    </div>
+
+    <div class="card">
+      <h3>버블 터지는 소리 🔊</h3>
+      <div class="sound-category-label">🫧 기본</div><div class="sound-grid" id="snd-basic"></div>
+      <div class="sound-category-label">🐾 동물 단음</div><div class="sound-grid" id="snd-animal"></div>
+      <div class="sound-category-label">🎵 멜로디 악기</div><div class="sound-grid" id="snd-melody"></div>
+      <button class="preview-btn" id="preview-btn" onclick="previewSound()">▶ 선택한 소리 미리듣기</button>
+    </div>
+
+    <div class="card">
+      <h3>기타 ⚙️</h3>
+      <div class="misc-grid">
+        <button class="misc-btn" id="bgm-btn" onclick="toggleBgm()">🎵 BGM: 꺼짐</button>
+        <button class="misc-btn" id="reset-btn" onclick="resetProgress()">🗑️ 진도 초기화</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="credit">그림 © OpenMoji (CC BY-SA 4.0)</div>
 </div>
 
 <!-- 게임 화면 -->
@@ -760,11 +781,12 @@ function playBgmNote() {
 /* ══════════════════════════════════════
    데이터 및 상태
 ══════════════════════════════════════ */
+// 나이(숫자) 대신 난이도 3단계 — 구체 나이 입력의 폼/사생활 느낌 제거, 선택 단순화.
+// 난이도 = 버블 격자 크기(많을수록 오래·어려움) + 제한시간.
 const AGES=[
-  {id:'baby',icon:'🧒',lbl:'4~6세',desc:'쉽고 귀엽게!',C:4,R:4,T:70,rec:['동물','과일','색깔']},
-  {id:'child',icon:'👦',lbl:'7~9세',desc:'조금 더 도전!',C:5,R:5,T:55,rec:['음식','탈것','자연']},
-  {id:'tween',icon:'🧑',lbl:'10~12세',desc:'실력을 키워요!',C:6,R:6,T:45,rec:['직업','나라','스포츠']},
-  {id:'teen',icon:'👨',lbl:'13세+',desc:'도전! 고급단어',C:6,R:6,T:35,rec:['수도','K컬처']},
+  {id:'easy',  icon:'🐣', lbl:'쉬움',   desc:'큰 그림 · 넉넉한 시간', C:4, R:4, T:70},
+  {id:'normal',icon:'🦊', lbl:'보통',   desc:'적당한 도전',          C:5, R:5, T:55},
+  {id:'hard',  icon:'🦉', lbl:'어려움', desc:'빠르게 도전!',         C:6, R:6, T:40},
 ];
 
 const GRPS={
@@ -794,8 +816,8 @@ function rank(p,t){
   return{lbl:'🌱 입문!',c:'#fd79a8',xp:10,m:'다음엔 더 빨리!'};
 }
 
-let selAge=null,selGrp=null,natLang='ko',lrnLang='en';
-let C=6,R=6,TL=60,TOT=36,stages=[],cur=0,popped=0,done=false;
+let selAge='normal',selGrp=null,natLang='ko',lrnLang='en';   // 난이도 기본 '보통'(첫 화면 단순화)
+let C=5,R=5,TL=55,TOT=25,stages=[],cur=0,popped=0,done=false;
 let score=0,xp=0,lv=1,tmrId=null,tLeft=0,repId=null;
 let childName='';      // 아이 이름
 let lastResult=null;   // 자랑하기용 최근 결과 캐시
@@ -809,7 +831,7 @@ function loadProgress(){
     if(s){ const d=JSON.parse(s);
       score=d.score||0; xp=d.xp||0; lv=d.lv||1; childName=d.name||'';
       // 지난 설정 기억 — 재방문 시 다시 고르는 마찰 최소화
-      if(d.age) selAge=d.age;
+      if(d.age && AGES.find(x=>x.id===d.age)) selAge=d.age;  // 유효한 난이도만(옛 나이id 무시)
       if(d.grp) selGrp=d.grp;
       if(d.snd && SOUNDS[d.snd]) selSound=d.snd;
       bgmOn=!!d.bgm; savedNat=d.nat||null; savedLrn=d.lrn||null;
@@ -855,7 +877,7 @@ function buildSetup(){
   AGES.forEach(a=>{
     const b=document.createElement('button'); b.className='age-btn'+(selAge===a.id?' sel':'');
     b.innerHTML=`<span class="age-icon">${a.icon}</span><b>${a.lbl}</b><span style="font-size:0.75rem;color:#dfe6e9;display:block;margin-top:2px;">${a.desc}</span>`;
-    b.onclick=()=>{selAge=a.id;selGrp=null;C=a.C;R=a.R;TL=a.T;TOT=C*R;buildSetup();saveProgress();}; ag.appendChild(b);
+    b.onclick=()=>{selAge=a.id;C=a.C;R=a.R;TL=a.T;TOT=C*R;buildSetup();saveProgress();}; ag.appendChild(b);
   });
 
   const gg=document.getElementById('grp-grid'); gg.innerHTML='';
@@ -863,14 +885,19 @@ function buildSetup(){
 
   Object.keys(GRPS).forEach(g=>{
     const b=document.createElement('button');
-    const rec=selAge&&AGES.find(a=>a.id===selAge)?.rec.includes(g);
     const gIcon=ic[g]||'📁';
     b.className='grp-btn'+(selAge?' on':'')+(selGrp===g?' sel':'');
-    b.innerHTML=`<span class="grp-icon">${gIcon}</span>${g}${rec?'<br><span style="font-size:0.65rem;color:#ffeaa7;font-weight:bold;">★추천</span>':''}`;
+    b.innerHTML=`<span class="grp-icon">${gIcon}</span>${g}`;
     b.onclick=()=>{ selGrp=g; buildSetup(); saveProgress(); };
     gg.appendChild(b);
   });
   document.getElementById('start-btn').classList.toggle('on',!!(selAge&&selGrp)); buildSoundUI(); updateWordbookCount();
+}
+
+/* 더보기(이름·언어·소리·기타) 펼치기/접기 */
+function toggleMore(){
+  const m=document.getElementById('more-settings'), t=document.getElementById('more-toggle');
+  const open=m.classList.toggle('open'); t.classList.toggle('open', open);
 }
 
 function startGame(){
