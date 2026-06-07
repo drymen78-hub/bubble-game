@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bubblepop-v3';
+const CACHE_NAME = 'bubblepop-v4';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -42,6 +42,16 @@ self.addEventListener('fetch', (e) => {
           return resp;
         })
         .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // HTML 문서(내비게이션): Network-First — 온라인이면 항상 최신 앱, 오프라인이면 캐시 폴백
+  if (e.request.mode === 'navigate' || e.request.destination === 'document') {
+    e.respondWith(
+      fetch(e.request)
+        .then(resp => { const clone = resp.clone(); caches.open(CACHE_NAME).then(c => c.put('./index.html', clone)); return resp; })
+        .catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')).then(r => r || caches.match('./')))
     );
     return;
   }

@@ -275,6 +275,11 @@ img.oimg{ object-fit:contain; user-select:none; -webkit-user-drag:none; pointer-
 #ov-next{ min-height: 56px; display: flex; align-items: center; justify-content: center; width:100%; padding:15px; background:linear-gradient(135deg,#00b894,#00cec9); border:none; border-radius:20px; color:#fff; font-size:1.1rem; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 6px 0 #019074, 0 10px 20px rgba(0,184,148,0.4); transition:all 0.1s; }
 #ov-next:active{transform:translateY(6px); box-shadow:none;}
 
+/* 결과/타임아웃 화면의 '다른 단어 고르기'(설정 화면으로) 버튼 — 보조 스타일 */
+.ov-home-btn{ width:100%; min-height:48px; display:flex; align-items:center; justify-content:center; gap:6px; margin-top:10px; padding:12px; border:2px solid rgba(255,255,255,0.35); border-radius:18px; background:rgba(255,255,255,0.08); color:#fff; font-size:1rem; font-weight:900; cursor:pointer; font-family:inherit; transition:all 0.12s; }
+.ov-home-btn:hover{ background:rgba(255,255,255,0.16); }
+.ov-home-btn:active{ transform:scale(0.97); }
+
 /* [FIX #1] 타임아웃 전용 다음 버튼 ID 분리 */
 #ov-next-timeout{ min-height: 56px; display: flex; align-items: center; justify-content: center; width:100%; padding:15px; background:linear-gradient(135deg,#00b894,#00cec9); border:none; border-radius:20px; color:#fff; font-size:1.1rem; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 6px 0 #019074, 0 10px 20px rgba(0,184,148,0.4); transition:all 0.1s; margin-top:24px; }
 #ov-next-timeout:active{transform:translateY(6px); box-shadow:none;}
@@ -524,7 +529,7 @@ img.oimg{ object-fit:contain; user-select:none; -webkit-user-drag:none; pointer-
       <div id="xp-txt">XP 0/100</div>
     </div>
     <div id="score-box"><div id="score-num">0</div><div id="score-lbl">점수</div></div>
-    <button id="cfg-btn" onclick="goSetup()">⚙️</button>
+    <button id="cfg-btn" onclick="goSetup()" title="다른 단어 고르기">🏠</button>
   </div>
   <div id="tmr-wrap"><div id="tmr-bg"><div id="tmr-bar"></div></div><div id="tmr-txt">60</div></div>
   <div id="game-title">🫧 버블팝 그림책</div>
@@ -560,6 +565,7 @@ img.oimg{ object-fit:contain; user-select:none; -webkit-user-drag:none; pointer-
       <div style="font-size:1.5rem;font-weight:900;color:#ff7675;margin-top:10px;">시간 초과!</div>
       <div id="ov-to-word" style="font-size:1rem;color:#ccc;margin-top:8px;font-weight:bold;"></div>
       <button id="ov-next-timeout" onclick="nextStage()">다음 그림 →</button>
+      <button class="ov-home-btn" onclick="goSetup()">🏠 다른 단어 고르기</button>
     </div>
     <div id="ov-result-area">
       <div id="ov-photo"></div>
@@ -579,6 +585,7 @@ img.oimg{ object-fit:contain; user-select:none; -webkit-user-drag:none; pointer-
         <div id="ov-msg"></div>
         <button id="share-btn" onclick="openShare()" style="display:none;">✨ 자랑하기</button>
         <button id="ov-next" onclick="nextStage()">다음 그림 →</button>
+        <button class="ov-home-btn" onclick="goSetup()">🏠 다른 단어 고르기</button>
       </div>
     </div>
   </div>
@@ -949,14 +956,35 @@ function spawnConfetti() {
 }
 
 /* ══ TTS ══ */
-/* [FIX #6] iOS TTS: 제스처 컨텍스트 보존을 위해 자동재생 제거, 버튼으로만 제어 */
+/* [FIX #6] iOS TTS: 제스처 컨텍스트 보존을 위해 자동재생 제거, 버튼으로만 제어
+   안드로이드 크롬은 음성 목록을 비동기로 늦게 채우므로 미리 로드해 둔다. */
+let _voices = [];
+function loadVoices(){ try{ _voices = window.speechSynthesis ? (speechSynthesis.getVoices()||[]) : []; }catch(e){ _voices=[]; } }
+function pickVoice(lang){
+  if(!_voices.length) loadVoices();
+  const code = (TCODES[lang]||'').toLowerCase();
+  const norm = v => (v.lang||'').toLowerCase().replace('_','-');
+  return _voices.find(v=>norm(v)===code)
+      || _voices.find(v=>norm(v).startsWith(lang.toLowerCase()+'-'))
+      || _voices.find(v=>norm(v).startsWith(lang.toLowerCase()))
+      || null;
+}
 function speak(txt,lang,cb){
-  if(!window.speechSynthesis)return;
-  window.speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(txt);
-  u.lang=TCODES[lang]; u.rate=0.85; u.pitch=1.1;
-  if(cb) u.onend=cb;
-  window.speechSynthesis.speak(u);
+  if(!window.speechSynthesis){ showToast('이 기기는 음성 읽기를 지원하지 않아요 😢'); return; }
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(txt);
+    u.lang=TCODES[lang]; u.rate=0.85; u.pitch=1.1;
+    const v=pickVoice(lang); if(v) u.voice=v;
+    let started=false; u.onstart=()=>{ started=true; }; if(cb) u.onend=cb;
+    speechSynthesis.speak(u);
+    /* 크롬 모바일 버그 우회: 일시정지 상태로 시작되면 재개 */
+    setTimeout(()=>{ try{ if(speechSynthesis.paused) speechSynthesis.resume(); }catch(e){} }, 130);
+    /* 음성 자체가 없어 소리가 안 나는 경우 안내(무한 침묵 방지) */
+    setTimeout(()=>{ if(!started && !speechSynthesis.speaking && !speechSynthesis.pending){
+      showToast('이 기기에 '+(LNAMES[lang]||lang)+' 음성이 없을 수 있어요');
+    } }, 900);
+  }catch(e){}
 }
 function ttsNat(){ speak(stages[cur].w[natLang],natLang); }
 function ttsLrn(){ speak(stages[cur].w[lrnLang],lrnLang); }
@@ -1395,6 +1423,9 @@ window.addEventListener('DOMContentLoaded', () => {
   /* BGM 버튼 상태 복원(실제 재생은 게임 시작 시) */
   if(bgmOn){ const bb=document.getElementById('bgm-btn'); bb.textContent='🎵 BGM: 켜짐'; bb.style.background='linear-gradient(135deg, #00b894, #00cec9)'; }
   updateWordbookCount();
+
+  /* TTS 음성 미리 로드 — 안드로이드 크롬은 voiceschanged 후에야 목록이 채워짐 */
+  if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
 
   /* [FIX #12] 이벤트 위임: bubble-layer에 리스너 1개만 등록.
      pointerdown 으로 통일 → 마우스·터치·펜 모두, 누르는 즉시(지연 0) 반응 + 멀티터치 연타 가능. */
