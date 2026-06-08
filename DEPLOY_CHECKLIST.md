@@ -1,4 +1,4 @@
-# 버블팝 그림책 — 현황 & 이어서 할 일 (최종 업데이트 2026-06-08)
+# 버블팝 그림책 — 현황 & 이어서 할 일 (최종 업데이트 2026-06-09)
 
 > 다음에 이어서 작업할 때 **이 파일부터** 읽으면 됩니다.
 
@@ -6,8 +6,17 @@
 - **라이브**: https://drymen78-hub.github.io/bubble-game/ (GitHub Pages, repo public, `.nojekyll`)
 - **개인정보처리방침**: https://drymen78-hub.github.io/bubble-game/privacy.html
 - 폰 브라우저로 열어 "홈 화면에 추가"하면 앱처럼 전체화면 동작.
-- SW network-first(HTML) → **푸시 후 새로고침하면 즉시 반영**. 현재 캐시 `bubblepop-v9`.
+- SW network-first(HTML) → **푸시 후 새로고침하면 즉시 반영**. 현재 캐시 `bubblepop-v11`.
 - ⚠️ GitHub **Settings의 "Change visibility" 누르지 말 것**(토글이라 private로 돌아가 Pages 꺼짐).
+
+## 🆕 2026-06-09 작업 (TTS 근본해결 + 잔여개선 + 모집준비)
+- **발음 오디오 번들(821개, 8.4MB)**: `audio/<lang>/<단어>.mp3`. `play()`가 MP3 우선 재생,
+  없거나 실패 시 기기 TTS 폴백 → **기기에 음성 없어도 발음 들림**(원복했던 작업의 정석 해결). 재생성: `tools/gen_audio.js`.
+- **세트 완료 화면**: 15단어 한 세트 끝나면 🎉 축하 화면(정답수·격려·confetti) + '한 번 더'/'다른 주제'. 무한루프에 끝맺음.
+- **폰트 로컬 번들**: Jua/Nunito 서브셋 woff2(`fonts/`, 총 ~104KB)로 자체 호스팅, Google Fonts 외부의존 제거.
+  privacy 문서도 '외부연결 없음'으로 정정. 재생성: `tools/build_fonts.py`(마스터는 `tools/_fontsrc/`, gitignore).
+- **모집/스토어 문서 신규**: `STORE_LISTING.md`(스토어 등록문구 복사용) · `TESTER_RECRUITMENT.md`(품앗이 모집/안내 템플릿) ·
+  `ROOTREPO_SETUP.md`(루트 repo+assetlinks 절차) + 스캐폴드 `tools/rootrepo-scaffold/`.
 
 ## ✅ 지금까지 반영된 개선 (요약)
 - **손맛**: 버블 팝 햅틱(진동) + 물방울 '뽁/톡' 사운드(팝마다 음높이 변주) + pointerdown 즉시반응·멀티터치.
@@ -32,10 +41,10 @@
 4. **비공개 테스트 20명 · 14일 연속** → 프로덕션 신청.
 
 ## ⚠️ 알려진 한계 / 다음에 고려할 것
-- **TTS 발음은 기기 음성에 의존**: 해당 언어 음성이 없는 기기는 무음/부정확(예: 영어 음성 없는 Windows). 기기 설정에서 음성 추가하면 해결. **근본 해결 = 단어별 발음 오디오 사전 녹음/생성해 번들**(언어학습앱 정석, 미착수 — 영어부터 추천).
-- 폰트 로컬 번들 미적용(Jua 97개 서브셋 ~1-2MB라 보류). Google Fonts 사용은 privacy에 고지됨.
-- 세션 종료 구조 없음(현재 15단어 무한 루프), 간격반복(SRS) 학습 미적용 — 향후 개선 후보.
-- `twa-build/`는 .gitignore 처리됨(서명키 보호). 네이티브/host 변경 시에만 AAB 재빌드 필요(웹 개선은 재빌드 불필요 — TWA가 라이브 URL 로드).
+- ✅ ~~TTS 기기 음성 의존~~ → **해결**(번들 MP3 우선 + 기기 TTS 폴백). 단, ja/zh/es 발음은 Google TTS로 생성한 것이라 음질·정확도는 무료 TTS 수준. 추후 더 좋은 음원으로 교체 가능(`tools/gen_audio.js` 재생성).
+- ✅ ~~폰트 로컬 번들 미적용~~ → **해결**(서브셋 woff2 자체 호스팅).
+- ✅ ~~세션 종료 구조 없음~~ → **세트 완료 화면 추가**. 단, 간격반복(SRS) 학습은 여전히 미적용 — 향후 후보.
+- `twa-build/`는 .gitignore 처리됨(서명키 보호). 네이티브/host 변경 시에만 AAB 재빌드 필요(웹 개선은 재빌드 불필요 — TWA가 라이브 URL 로드). **발음 오디오/폰트는 라이브 URL에서 로드되므로 AAB 재빌드 없이 반영됨.**
 
 ## 작업 환경 메모
 - 로컬: `C:\bubble-game` / repo: github.com/drymen78-hub/bubble-game (public)
