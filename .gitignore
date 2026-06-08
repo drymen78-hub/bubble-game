@@ -13,3 +13,6 @@ twa-build/
 # OS
 .DS_Store
 Thumbs.db
+
+# 폰트 마스터 원본(서브셋 생성용, 대용량) — 결과 woff2(fonts/)만 커밋
+tools/_fontsrc/

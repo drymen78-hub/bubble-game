@@ -56,8 +56,8 @@
 
 | 사용 목적 | 수집 여부 | 설명 |
 |-----------|----------|------|
-| 폰트 로드 (Google Fonts) | ❌ 개인정보 없음 | 화면 표시용 폰트 파일 다운로드 |
-| 음성 합성 TTS | ❌ 개인정보 없음 | 기기 내장 Web Speech API 사용 |
+| 폰트 (앱에 포함) | ❌ 개인정보 없음 | 앱에 번들된 폰트 사용 — 외부(제3자) 서버 연결 없음 |
+| 발음 오디오 / 음성 | ❌ 개인정보 없음 | 앱에 번들된 발음 오디오 재생, 없을 경우 기기 내장 음성(Web Speech API)으로 폴백 |
 | PWA 오프라인 캐시 | ❌ 개인정보 없음 | 앱 파일을 기기에 저장하여 오프라인 실행 |
 
 앱은 광고 네트워크, 분석 SDK(Analytics), 소셜 미디어 SDK를 **전혀 포함하지 않습니다.**
@@ -161,8 +161,8 @@ The App uses internet connectivity only for:
 
 | Purpose | Personal Data | Description |
 |---------|--------------|-------------|
-| Font loading (Google Fonts) | ❌ None | Download display fonts |
-| Text-to-Speech (TTS) | ❌ None | Uses device's built-in Web Speech API |
+| Fonts (bundled in app) | ❌ None | Uses fonts bundled in the app — no third-party server connection |
+| Pronunciation audio / voice | ❌ None | Plays pronunciation audio bundled in the app; falls back to device's built-in voice (Web Speech API) |
 | PWA offline cache | ❌ None | Stores app files locally for offline use |
 
 The App contains **no advertising networks, analytics SDKs, or social media SDKs.**

@@ -1,10 +1,12 @@
-const CACHE_NAME = 'bubblepop-v10';
+const CACHE_NAME = 'bubblepop-v11';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './android-chrome-192x192.png',
-  './android-chrome-512x512.png'
+  './android-chrome-512x512.png',
+  './fonts/Jua-subset.woff2',
+  './fonts/Nunito-subset.woff2'
 ];
 
 // 설치: 정적 자산 사전 캐시

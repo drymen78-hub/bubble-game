@@ -13,13 +13,11 @@
 <!-- [FIX #3] manifest: 인라인 data URI → 외부 파일 -->
 <link rel="manifest" href="manifest.json">
 
-<!-- [FIX #14] Google Fonts: @import 블로킹 → link preconnect + stylesheet -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@700;900&display=swap">
-
 <title>버블팝 그림책</title>
 <style>
+/* 폰트 로컬 번들(서브셋 woff2 자체 호스팅) — Google Fonts 외부 의존 제거, 오프라인·프라이버시 강화 */
+@font-face{font-family:'Jua';src:url('fonts/Jua-subset.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Nunito';src:url('fonts/Nunito-subset.woff2') format('woff2');font-weight:400 900;font-display:swap;}
 *{margin:0;padding:0;box-sizing:border-box;}
 html{height:100%;}
 body{
@@ -290,6 +288,8 @@ img.oimg{ object-fit:contain; user-select:none; -webkit-user-drag:none; pointer-
 #ov-timeout.on{display:block;}
 #ov-result-area{display:none;}
 #ov-result-area.on{display:block;}
+#ov-setdone{display:none;text-align:center;padding:30px 16px;}
+#ov-setdone.on{display:block;}
 #ov-next{ min-height: 56px; display: flex; align-items: center; justify-content: center; width:100%; padding:15px; background:linear-gradient(135deg,#00b894,#00cec9); border:none; border-radius:20px; color:#fff; font-size:1.1rem; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 6px 0 #019074, 0 10px 20px rgba(0,184,148,0.4); transition:all 0.1s; }
 #ov-next:active{transform:translateY(6px); box-shadow:none;}
 
@@ -299,8 +299,8 @@ img.oimg{ object-fit:contain; user-select:none; -webkit-user-drag:none; pointer-
 .ov-home-btn:active{ transform:scale(0.97); }
 
 /* [FIX #1] 타임아웃 전용 다음 버튼 ID 분리 */
-#ov-next-timeout{ min-height: 56px; display: flex; align-items: center; justify-content: center; width:100%; padding:15px; background:linear-gradient(135deg,#00b894,#00cec9); border:none; border-radius:20px; color:#fff; font-size:1.1rem; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 6px 0 #019074, 0 10px 20px rgba(0,184,148,0.4); transition:all 0.1s; margin-top:24px; }
-#ov-next-timeout:active{transform:translateY(6px); box-shadow:none;}
+#ov-next-timeout,#ov-setdone-next{ min-height: 56px; display: flex; align-items: center; justify-content: center; width:100%; padding:15px; background:linear-gradient(135deg,#00b894,#00cec9); border:none; border-radius:20px; color:#fff; font-size:1.1rem; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 6px 0 #019074, 0 10px 20px rgba(0,184,148,0.4); transition:all 0.1s; margin-top:24px; }
+#ov-next-timeout:active,#ov-setdone-next:active{transform:translateY(6px); box-shadow:none;}
 
 #lvup{ display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%); background:linear-gradient(135deg,#f093fb,#f5576c);border-radius:30px;padding:30px 40px; text-align:center;z-index:999;box-shadow:0 20px 60px rgba(245,87,108,0.6);border:4px solid #fff; }
 #lvup.on{display:block;animation:zinPopup 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
@@ -591,6 +591,14 @@ img.oimg{ object-fit:contain; user-select:none; -webkit-user-drag:none; pointer-
       <button id="ov-next-timeout" onclick="nextStage()">다음 그림 →</button>
       <button class="ov-home-btn" onclick="goSetup()">🏠 다른 단어 고르기</button>
     </div>
+    <div id="ov-setdone">
+      <div style="font-size:3.5rem">🎉</div>
+      <div style="font-size:1.6rem;font-weight:900;color:#ffeaa7;margin-top:10px;">세트 완료!</div>
+      <div id="ov-setdone-stat" style="font-size:1.05rem;color:#fff;margin-top:12px;font-weight:bold;"></div>
+      <div id="ov-setdone-msg" style="font-size:0.95rem;color:#ccc;margin-top:6px;font-weight:bold;"></div>
+      <button id="ov-setdone-next" onclick="restartSet()">🔄 한 번 더!</button>
+      <button class="ov-home-btn" onclick="goSetup()">🏠 다른 단어 고르기</button>
+    </div>
     <div id="ov-result-area">
       <div id="ov-photo"></div>
       <div id="ov-body">
@@ -821,6 +829,7 @@ function rank(p,t){
 
 let selAge='normal',selGrp=null,natLang='ko',lrnLang='en';   // 난이도 기본 '보통'(첫 화면 단순화)
 let C=5,R=5,TL=55,TOT=25,stages=[],cur=0,popped=0,done=false;
+let setProgress=0,setCorrect=0;   // 한 세트(15단어) 진행/정답 수
 let score=0,xp=0,lv=1,tmrId=null,tLeft=0,repId=null;
 let childName='';      // 아이 이름
 let lastResult=null;   // 자랑하기용 최근 결과 캐시
@@ -910,7 +919,7 @@ function startGame(){
   let words = shuffle(GRPS[selGrp]);
   while(words.length < 15) { words = words.concat(shuffle(GRPS[selGrp])); }
   stages = words.slice(0, 15);
-  cur=0;
+  cur=0; setProgress=0; setCorrect=0;
 
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('game-screen').style.display='flex';
@@ -942,7 +951,9 @@ function showOverlay(m){
   document.getElementById('overlay').classList.add('on');
   document.getElementById('ov-timeout').className='';
   document.getElementById('ov-result-area').className='';
+  document.getElementById('ov-setdone').className='';
   if(m==='timeout') document.getElementById('ov-timeout').className='on';
+  else if(m==='setdone') document.getElementById('ov-setdone').className='on';
   else document.getElementById('ov-result-area').className='on';
 }
 function hideOverlay(){ document.getElementById('overlay').classList.remove('on'); }
@@ -1111,7 +1122,7 @@ function showResult(success){
   document.getElementById('ov-lrn-lbl').textContent=LNAMES[lrnLang];
   document.getElementById('ov-lrn').textContent=s.w[lrnLang];
   if(success){
-    score+=rk.xp;
+    score+=rk.xp; setCorrect++;
     learnedKeys.add(selGrp+'|'+s.e); // 도감에 수집(맞춘 단어)
     document.getElementById('ov-rank').innerHTML=`<span style="color:${rk.c}">${rk.lbl}</span>`;
     document.getElementById('ov-xp').textContent=`+${rk.xp} XP 획득!`;
@@ -1141,7 +1152,33 @@ function showResult(success){
   unlockAudio();
 }
 
-function nextStage(){ stopTTS(); hideOverlay(); cur=(cur+1)%stages.length; buildStage(); }
+function nextStage(){
+  stopTTS(); hideOverlay();
+  setProgress++;
+  if(setProgress>=stages.length){ showSetComplete(); return; }  // 15단어 한 세트 완료
+  cur=(cur+1)%stages.length; buildStage();
+}
+/* 한 세트(15단어)를 모두 마치면 완료 축하 화면 */
+function showSetComplete(){
+  stopTmr();
+  const n=stages.length;
+  document.getElementById('ov-setdone-stat').textContent=`${n}개 단어 중 ${setCorrect}개 정답! ⭐`;
+  document.getElementById('ov-setdone-msg').textContent =
+    setCorrect===n ? '완벽해요! 모두 맞혔어요! 🏆' :
+    setCorrect>=n*0.6 ? '잘했어요! 한 번 더 도전해볼까요?' :
+    '좋아요! 다시 하면 더 잘할 수 있어요! 💪';
+  spawnConfetti(); playClear();
+  showOverlay('setdone');
+}
+/* 같은 주제로 한 세트 다시 시작(새로 셔플) */
+function restartSet(){
+  stopTTS(); hideOverlay();
+  let words = shuffle(GRPS[selGrp]);
+  while(words.length < 15) { words = words.concat(shuffle(GRPS[selGrp])); }
+  stages = words.slice(0, 15);
+  cur=0; setProgress=0; setCorrect=0;
+  buildStage();
+}
 
 /* ══════════════════════════════════════
    자랑하기 시스템
