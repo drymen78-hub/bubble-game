@@ -987,6 +987,12 @@ function spawnConfetti() {
 
 /* ══ TTS ══ */
 /* [FIX #6] iOS TTS: 제스처 컨텍스트 보존을 위해 자동재생 제거, 버튼으로만 제어 */
+/* 발음은 번들 MP3(audio/<lang>/<단어>.mp3)를 우선 재생하고,
+ * 파일이 없거나 실패하면 기기 TTS(speechSynthesis)로 폴백한다.
+ * → 기기에 해당 언어 음성이 없어도 발음이 들린다(근본 해결). */
+let curAudio=null;
+function audioUrl(text,lang){ return 'audio/'+lang+'/'+encodeURIComponent(text)+'.mp3'; }
+function stopAudioOnly(){ if(curAudio){ try{curAudio.pause();}catch(e){} curAudio=null; } }
 function speak(txt,lang,cb){
   if(!window.speechSynthesis)return;
   window.speechSynthesis.cancel();
@@ -995,17 +1001,30 @@ function speak(txt,lang,cb){
   if(cb) u.onend=cb;
   window.speechSynthesis.speak(u);
 }
-function ttsNat(){ speak(stages[cur].w[natLang],natLang); }
-function ttsLrn(){ speak(stages[cur].w[lrnLang],lrnLang); }
+/* 통합 발음 재생: MP3 우선 → 실패 시 기기 TTS */
+function play(txt,lang,cb){
+  stopAudioOnly();
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  const a=new Audio(audioUrl(txt,lang));
+  curAudio=a; let fell=false;
+  const fallback=()=>{ if(fell)return; fell=true; if(curAudio===a)curAudio=null; speak(txt,lang,cb); };
+  a.onended=()=>{ if(curAudio===a)curAudio=null; if(cb)cb(); };
+  a.onerror=fallback;
+  const p=a.play();
+  if(p&&p.catch) p.catch(fallback);
+}
+function ttsNat(){ play(stages[cur].w[natLang],natLang); }
+function ttsLrn(){ play(stages[cur].w[lrnLang],lrnLang); }
 function ttsRep(){
   const btn=document.getElementById('tbtn-rep');
   if(repId){ clearInterval(repId); repId=null; btn.textContent='🔁 반복'; return; }
   btn.textContent='⏹ 중지';
-  const go=()=>speak(stages[cur].w[natLang],natLang,()=>setTimeout(()=>speak(stages[cur].w[lrnLang],lrnLang),350));
+  const go=()=>play(stages[cur].w[natLang],natLang,()=>setTimeout(()=>play(stages[cur].w[lrnLang],lrnLang),350));
   go(); repId=setInterval(go,3500);
 }
 function stopTTS(){
   if(repId){ clearInterval(repId); repId=null; }
+  stopAudioOnly();
   if(window.speechSynthesis) window.speechSynthesis.cancel();
   const b=document.getElementById('tbtn-rep'); if(b) b.textContent='🔁 반복';
 }
@@ -1394,7 +1413,7 @@ function renderWordbook(){
 function speakWord(g,e){
   const lrn=document.getElementById('sel-lrn').value||lrnLang;
   const word=(GRPS[g]||[]).find(x=>x.e===e); if(!word) return;
-  haptic(8); unlockAudio(); speak(word.w[lrn], lrn);
+  haptic(8); unlockAudio(); play(word.w[lrn], lrn);
 }
 
 /* HUD 업데이트 */
